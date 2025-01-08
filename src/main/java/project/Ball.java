@@ -23,9 +23,9 @@ public class Ball {
         }
 
         //Ball in starting area, ex 180 angle
-        if (posX <= GeneticGolf.POSX_INIT_BOUND){
-            return Double.MIN_VALUE;
-        }
+//        if (posX <= GeneticGolf.POSX_INIT_BOUND){
+//            return -10;
+//        }
         //Calculate fitness when ball isn't in hole
         //TODO: Look at this calulation further
         return 1.0 / (1.0 + distance);
