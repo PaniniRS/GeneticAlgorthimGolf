@@ -1,25 +1,26 @@
 package project;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
 public class GeneticGolf {
-    public static final int GENERATIONS = 1000;
-    public static final double HOLEPOS = 10000.0;
-    public static final int POPSIZE = 500;
-    private static final int BEST_POP_TO_GET = 2;
+    public static final int GENERATIONS = 10000;
+    public static final double HOLEPOS = 1000.0;
+    public static final int POPSIZE = 5000;
+    private static final int BEST_POP_TO_GET = 6;
     public static final double MUTATION_RATE = 0.1;
     public static final double CROSSOVER_RATE = 0.6;
 
     public static final double GRAVITY = 9.8;
     public static final double DRAG = 0.5;
-    public static final double TICK = 0.0006;
+    public static final double TICK = 0.001;
 
     private static final int SEED = 1;
 
     public static final int ANGLE_BOUND = 180;
-    public static final int VELOCITY_BOUND = 300;
+    public static final int VELOCITY_BOUND = 2000;
     public static final int POSX_INIT_BOUND = 1000;
 
     static Random r = new Random(SEED);
@@ -35,16 +36,21 @@ public class GeneticGolf {
             }
         //Selection
             //Sort the array based on fitness
-            population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
+            population.sort(Comparator.comparingDouble(Ball::getFitness)); //TODO LOOK AT THIS
+            ArrayList<Ball> newPop = generatePopulation();
 
-            // Get the x best chromosomes/balls
+            // Get the x best chromosomes/balls //TODO best population isnt getting saved!!!!!
             for (int j = 0; j < BEST_POP_TO_GET; j++) {
-                bestPop.add(population.get(j));
+                if(population.get(j).getFitness() >= 1.0) {
+                    System.out.println("!!!! Reached optimal after + " + i + " generations !!!!");
+                    System.out.println("Final fitness of "  + j +" th best: " + population.get(j).getFitness());
+                    break;
+                }
                 System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + population.get(j).getFitness());
+                newPop.add(population.get(j));
             }
             System.out.println("-----------------------------");
 
-            ArrayList<Ball> newPop = generatePopulation();
 
         //Crossover
             for (Ball ball : population) {
