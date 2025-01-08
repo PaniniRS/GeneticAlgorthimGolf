@@ -31,14 +31,17 @@ public class GeneticGolf {
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
                 if(tempBall.getFitness() >= 0.95) {
-                    System.out.println("!!!! Reached optimal after + " + i + " generations !!!!");
+                    System.out.println("!!!! Reached optimal after " + i + " generations !!!!");
                     System.out.println("Final fitness of "  + j +" th best: " + tempBall.getFitness());
-                    throw new RuntimeException("FINISHED");
+                    Config.optimalToggle();
+                    break;
                 }
                 System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + tempBall.getFitness());
                 newBestPop.add(tempBall.copy());
             }
             System.out.println("-----------------------------");
+
+            if(getOptimalReached() == 1) {break;}
 
         //Crossover
             for (Ball ball : population) {

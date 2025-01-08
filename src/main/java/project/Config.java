@@ -22,5 +22,14 @@ public class Config {
     public static final int VELOCITY_BOUND = 5000;
     public static final int POSX_INIT_BOUND = 1000;
 
+    private static int OPTIMAL_REACHED = 0;
+
     public static final Random GLOBAL_RANDOM = new Random(SEED);
+
+    public static void optimalToggle(){
+        OPTIMAL_REACHED = Math.abs(OPTIMAL_REACHED - 1);
+    }
+    public static int getOptimalReached(){
+        return OPTIMAL_REACHED;
+    }
 }
