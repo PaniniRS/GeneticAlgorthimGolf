@@ -10,7 +10,7 @@ public class Config {
 
     public static final double GRAVITY = 9.8;
     public static final double DRAG = 0.5;
-    public static final double TICK = 0.001;
+    public static final double TICK = 0.006;
 
     public static final int SEED = 1;
 
