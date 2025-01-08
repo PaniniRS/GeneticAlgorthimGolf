@@ -15,7 +15,6 @@ public class GeneticGolf {
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = generatePopulation();
-        ArrayList<Ball> bestPop = new ArrayList<>();
 
         for (int i = 0; i < GENERATIONS; i++) {
         //Fitness
