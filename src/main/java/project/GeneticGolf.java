@@ -47,7 +47,10 @@ public class GeneticGolf {
             }
             System.out.println("-----------------------------");
 
-            if(getOptimalReached() == 1) {break;}
+            if(getOptimalReached() == 1) {
+                assert panel != null;
+                panel.updateVisualization(population, newBestPop, i);
+                break;}
 
         //Crossover
             for (Ball ball : population) {
