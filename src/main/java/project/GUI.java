@@ -39,7 +39,7 @@ public class GUI extends JPanel {
 
         // Draw balls
         for (Ball ball : balls) {
-            int x = (int) (ball.getPosX() * getWidth() / POSX_INIT_BOUND);
+            int x = (int) (ball.getPosX() / getWidth());
             int y = getHeight() / 2 - 8;
             g.setColor(new Color(131, 125, 4));
             g.fillOval(x, y, 8, 8);
