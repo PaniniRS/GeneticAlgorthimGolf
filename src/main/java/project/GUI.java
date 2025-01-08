@@ -25,7 +25,7 @@ public class GUI extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        g.drawString("Generation", getWidth()/2, getHeight() /8);
+        g.drawString("Generation", getWidth()/2, getHeight() - 20);
 
         // Draw grass
         g.setColor(new Color(34, 139, 34));
@@ -33,9 +33,9 @@ public class GUI extends JPanel {
 
         // Draw hole
         g.setColor(new Color(0, 9, 0));
-        int holeX = (int) (HOLEPOS * getWidth() / POSX_INIT_BOUND);
-        int holeY = getHeight() / 2 + 10;
-        g.fillRect(holeX - 5, holeY - 5, 24, 10);
+        int holeX = (int) (HOLEPOS / getWidth());
+        int holeY = getHeight() / 2;
+        g.fillRect(holeX - 5, holeY - 5, 24, 50);
 
         // Draw balls
         for (Ball ball : balls) {
