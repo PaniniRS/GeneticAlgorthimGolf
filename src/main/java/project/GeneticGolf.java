@@ -10,7 +10,7 @@ import static project.Config.*;
 //////////////////////////////////
 
 public class GeneticGolf {
-    static Random r = new Random(SEED);
+    static Random r = GLOBAL_RANDOM;
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
