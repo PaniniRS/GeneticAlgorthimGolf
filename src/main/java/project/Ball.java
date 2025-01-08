@@ -20,7 +20,7 @@ public class Ball {
         double distance = Math.abs(posX - HOLEPOS);
         //Ball in hole
         if (distance == 0){
-            return Double.MAX_VALUE;
+            return 2000;
         }
 
         //Ball in starting area, ex 180 angle
@@ -48,9 +48,9 @@ public class Ball {
     //Crossover
     public Ball crossover(Ball b1){
         Ball newB = new Ball(posX, posY, velocity, angle);
-        this.posX = Math.random() > 0.5 ? this.posX : b1.posX;
-        this.velocity = Math.random() > 0.5 ? this.velocity : b1.velocity;
-        this.angle = Math.random() > 0.5 ? this.angle : b1.angle;
+        newB.posX = Math.random() > 0.5 ? this.posX : b1.posX;
+        newB.velocity = Math.random() > 0.5 ? this.velocity : b1.velocity;
+        newB.angle = Math.random() > 0.5 ? this.angle : b1.angle;
         return newB;
     }
 
@@ -74,5 +74,9 @@ public class Ball {
 
     public double getFitness(){
         return fitness;
+    }
+
+    public Ball copy(){
+        return new Ball(posX, posY, velocity, angle);
     }
 }
