@@ -21,7 +21,6 @@ public class Ball {
 
     //RunFitness
     public double evaluateFitness(){
-        double fitness;
         while(!isStopped()){
                 updateBall();
             }
