@@ -37,7 +37,7 @@ public class Ball {
 //        }
         //Calculate fitness when ball isn't in hole
         //TODO: Look at this calulation further
-        return 1.0 / (1.0 + distance);
+        return 1.0 / (1.0 + distance) + GLOBAL_RANDOM.nextDouble() * NOISE;
     }
 
     //CheckStopped
