@@ -8,7 +8,7 @@ public class GeneticGolf {
     public static final int GENERATIONS = 1000;
     public static final double HOLEPOS = 10000.0;
     public static final int POPSIZE = 500;
-    private static final int BEST_POP_TO_GET = 10;
+    private static final int BEST_POP_TO_GET = 2;
     public static final double MUTATION_RATE = 0.1;
     public static final double CROSSOVER_RATE = 0.6;
 
@@ -19,7 +19,7 @@ public class GeneticGolf {
     private static final int SEED = 1;
 
     public static final int ANGLE_BOUND = 180;
-    public static final int VELOCITY_BOUND = 500;
+    public static final int VELOCITY_BOUND = 300;
     public static final int POSX_INIT_BOUND = 1000;
 
     static Random r = new Random(SEED);
@@ -36,10 +36,13 @@ public class GeneticGolf {
         //Selection
             //Sort the array based on fitness
             population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
+
             // Get the x best chromosomes/balls
             for (int j = 0; j < BEST_POP_TO_GET; j++) {
                 bestPop.add(population.get(j));
+                System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + population.get(j).getFitness());
             }
+            System.out.println("-----------------------------");
 
             ArrayList<Ball> newPop = generatePopulation();
 
@@ -57,6 +60,7 @@ public class GeneticGolf {
                 }
             }
 
+            population = newPop;
         }//genLoop
     }//main
 
