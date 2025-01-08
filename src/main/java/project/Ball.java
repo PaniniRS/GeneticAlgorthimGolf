@@ -1,4 +1,5 @@
 package project;
+import static project.Config.*;
 
 public class Ball {
     private double posX, posY, velocity, angle, fitness;
@@ -16,7 +17,7 @@ public class Ball {
         while(!isStopped()){
                 updateBall();
             }
-        double distance = Math.abs(posX - GeneticGolf.HOLEPOS);
+        double distance = Math.abs(posX - HOLEPOS);
         //Ball in hole
         if (distance == 0){
             return Double.MAX_VALUE;
@@ -38,9 +39,9 @@ public class Ball {
 
     //Used for calculating fitness
     public void updateBall(){
-        posX += velocity * Math.cos(Math.toRadians(angle)) * GeneticGolf.TICK;
-        posY += velocity * Math.sin(Math.toRadians(angle)) * GeneticGolf.TICK - 0.5 * GeneticGolf.GRAVITY * Math.pow(GeneticGolf.TICK, 2);
-        velocity -= GeneticGolf.DRAG;
+        posX += velocity * Math.cos(Math.toRadians(angle)) * TICK;
+        posY += velocity * Math.sin(Math.toRadians(angle)) * TICK - 0.5 * GRAVITY * Math.pow(TICK, 2);
+        velocity -= DRAG;
         if (posY < 0) posY = 0;
     }
 
@@ -56,11 +57,11 @@ public class Ball {
         //RANDOM RESET Mutation, check this in the morning
         //30% for one gene to mutate
         if (randomNumber < 0.3){
-            this.posX = Math.random() * GeneticGolf.POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
+            this.posX = Math.random() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
         } else if (randomNumber >= 0.3 &&  randomNumber < 0.6) {
-            this.velocity = Math.random() * GeneticGolf.VELOCITY_BOUND;
+            this.velocity = Math.random() * VELOCITY_BOUND;
         }else{
-            this.angle = Math.random() * GeneticGolf.ANGLE_BOUND;
+            this.angle = Math.random() * ANGLE_BOUND;
         }
     }
 
