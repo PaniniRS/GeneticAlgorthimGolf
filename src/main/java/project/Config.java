@@ -1,5 +1,7 @@
 package project;
 
+import java.util.Random;
+
 public class Config {
     public static final int GENERATIONS = 500_000;
     public static final double HOLEPOS = 10000.0;
@@ -17,4 +19,6 @@ public class Config {
     public static final int ANGLE_BOUND = 180;
     public static final int VELOCITY_BOUND = 5000;
     public static final int POSX_INIT_BOUND = 1000;
+
+    public static final Random GLOBAL_RANDOM = new Random(SEED);
 }
