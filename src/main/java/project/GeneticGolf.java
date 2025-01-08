@@ -39,6 +39,7 @@ public class GeneticGolf {
                 if(tempBall.getFitness() >= 0.95) {
                     System.out.println("!!!! Reached optimal after " + i + " generations !!!!");
                     System.out.println("Final fitness of "  + j +" th best: " + tempBall.getFitness());
+                    newBestPop.add(tempBall.copy());
                     Config.optimalToggle();
                     break;
                 }
