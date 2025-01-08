@@ -46,10 +46,12 @@ public class Ball {
     }
 
     //Crossover
-    public void crossover(Ball b1){
+    public Ball crossover(Ball b1){
+        Ball newB = new Ball(posX, posY, velocity, angle);
         this.posX = Math.random() > 0.5 ? this.posX : b1.posX;
         this.velocity = Math.random() > 0.5 ? this.velocity : b1.velocity;
         this.angle = Math.random() > 0.5 ? this.angle : b1.angle;
+        return newB;
     }
 
     //Mutation
