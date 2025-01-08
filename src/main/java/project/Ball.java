@@ -2,13 +2,21 @@ package project;
 import static project.Config.*;
 
 public class Ball {
-    private double posX, posY, velocity, angle, fitness;
+    public double posX, posY, velocity, angle, fitness;
 
     public Ball(double posX, double posY, double velocity, double angle) {
         this.posX = posX;
         this.posY = posY;
         this.velocity = velocity;
         this.angle = angle;
+    }
+
+    public Ball(double posX, double posY, double velocity, double angle, double fitness) {
+        this.posX = posX;
+        this.posY = posY;
+        this.velocity = velocity;
+        this.angle = angle;
+        this.fitness = fitness;
     }
 
     //RunFitness
@@ -48,9 +56,9 @@ public class Ball {
     //Crossover
     public Ball crossover(Ball b1){
         Ball newB = new Ball(posX, posY, velocity, angle);
-        newB.posX = Math.random() > 0.5 ? this.posX : b1.posX;
-        newB.velocity = Math.random() > 0.5 ? this.velocity : b1.velocity;
-        newB.angle = Math.random() > 0.5 ? this.angle : b1.angle;
+        newB.posX = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.posX : b1.posX;
+        newB.velocity = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.velocity : b1.velocity;
+        newB.angle = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.angle : b1.angle;
         return newB;
     }
 
@@ -59,11 +67,11 @@ public class Ball {
         //RANDOM RESET Mutation, check this in the morning
         //30% for one gene to mutate
         if (randomNumber < 0.3){
-            this.posX = Math.random() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
+            this.posX = GLOBAL_RANDOM.nextDouble() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
         } else if (randomNumber >= 0.3 &&  randomNumber < 0.6) {
-            this.velocity = Math.random() * VELOCITY_BOUND;
+            this.velocity = GLOBAL_RANDOM.nextDouble() * VELOCITY_BOUND;
         }else{
-            this.angle = Math.random() * ANGLE_BOUND;
+            this.angle = GLOBAL_RANDOM.nextDouble() * ANGLE_BOUND;
         }
     }
 
@@ -77,6 +85,6 @@ public class Ball {
     }
 
     public Ball copy(){
-        return new Ball(posX, posY, velocity, angle);
+        return new Ball(posX, posY, velocity, angle, fitness);
     }
 }
