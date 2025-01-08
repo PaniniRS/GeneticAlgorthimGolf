@@ -21,7 +21,7 @@ public class GeneticGolf {
             }
         //Selection
             //Sort the array based on fitness
-            population.sort(Comparator.comparingDouble(Ball::getFitness)); //TODO LOOK AT THIS
+            population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
             ArrayList<Ball> newPop = generatePopulation();
 
             // Get the x best chromosomes/balls //TODO best population isnt getting saved!!!!!
