@@ -25,6 +25,8 @@ public class GUI extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        g.drawString("Generation", getWidth()/2, getHeight() /8);
+
         // Draw grass
         g.setColor(new Color(34, 139, 34));
         g.fillRect(0, getHeight() / 2, getWidth(), getHeight() / 2);
