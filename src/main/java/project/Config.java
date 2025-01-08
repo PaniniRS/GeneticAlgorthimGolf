@@ -7,8 +7,10 @@ public class Config {
     public static final double HOLEPOS = 10000.0;
     public static final int POPSIZE = 1000;
     public static final int BEST_POP_TO_GET = 4;
+
     public static final double MUTATION_RATE = 0.2;
     public static final double CROSSOVER_RATE = 0.5;
+    public static final double NOISE = 0.0006;
 
     public static final double GRAVITY = 9.8;
     public static final double DRAG = 0.5;
