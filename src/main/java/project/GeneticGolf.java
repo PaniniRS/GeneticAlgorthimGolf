@@ -1,11 +1,13 @@
 package project;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
 
 import static project.Config.*;
+
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
 
 public class GeneticGolf {
     static Random r = new Random(SEED);
@@ -24,6 +26,20 @@ public class GeneticGolf {
             //Sort the array based on fitness
             population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
             ArrayList<Ball> newPop = new ArrayList<Ball>();
+            ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
+
+            // Get the x best chromosomes/balls //TODO best population isnt getting saved!!!!!
+            for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
+                Ball tempBall = population.get(j);
+                if(tempBall.getFitness() >= 0.95) {
+                    System.out.println("!!!! Reached optimal after + " + i + " generations !!!!");
+                    System.out.println("Final fitness of "  + j +" th best: " + tempBall.getFitness());
+                    throw new RuntimeException("FINISHED");
+                }
+                System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + tempBall.getFitness());
+                newBestPop.add(tempBall.copy());
+            }
+            System.out.println("-----------------------------");
 
         //Crossover
             for (Ball ball : population) {
@@ -39,18 +55,8 @@ public class GeneticGolf {
                 }
             }
 
-            // Get the x best chromosomes/balls //TODO best population isnt getting saved!!!!!
-            for (int j = 0; j < BEST_POP_TO_GET; j++) {
-                if(population.get(j).getFitness() >= 0.95) {
-                    System.out.println("!!!! Reached optimal after + " + i + " generations !!!!");
-                    System.out.println("Final fitness of "  + j +" th best: " + population.get(j).getFitness());
-//                    throw new RuntimeException("FINISHED");
-                    break; //TODO: CHECK THIS STOPGAP
-                }
-                System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + population.get(j).getFitness());
-                newPop.add(population.get(j));
-            }
-            System.out.println("-----------------------------");
+            //Adding ELITE chromosome to population
+            newPop.addAll(newBestPop);
             population = newPop;
         }//genLoop
 
