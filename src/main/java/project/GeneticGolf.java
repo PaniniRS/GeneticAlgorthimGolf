@@ -13,7 +13,7 @@ import static project.Config.*;
 public class GeneticGolf {
     static Random r = GLOBAL_RANDOM;
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = generatePopulation();
 
@@ -74,7 +74,7 @@ public class GeneticGolf {
             newPop.addAll(newBestPop);
             population = newPop;
 
-            if (GUI_TOGGLE && i % 100 == 0 && panel != null) {
+            if (GUI_TOGGLE && i % 25 == 0 && panel != null) {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }//genLoop
