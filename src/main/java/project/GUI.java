@@ -26,32 +26,45 @@ public class GUI extends JPanel {
         super.paintComponent(g);
         final int ballDiameter = 16;
 
+        //Draw background
+        g.setColor(new Color(124, 233, 252, 120));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
         // Draw the generation label
-        g.drawString("Generation", getWidth() / 2, getHeight() - 20);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.setColor(new Color(255, 255, 255));
+        g.drawString(generationLabel.getText(), getWidth() / 2 - 60, getHeight() / 10);
 
         // Draw grass
-        g.setColor(new Color(34, 139, 34));
-        g.fillRect(0, getHeight() / 2, getWidth(), getHeight() / 2);
+        g.setColor(new Color(40, 170, 30));
+        g.fillRect(0, getHeight() - getHeight()/3, getWidth(), getHeight() / 3);
 
         // Draw hole
-        g.setColor(new Color(0, 9, 0));
+        g.setColor(new Color(20, 50, 15));
         int holeX = (int) (HOLEPOS % GUIWidth); // Scale correctly
-        int holeY = getHeight() / 2;
-        g.fillRect(holeX - 5, holeY - 5, 24, 50);
+        int holeY = getHeight() - getHeight()/3;
+        g.fillRect(holeX, holeY, 24, 12);
+
+        //Draw hole flag
+        g.setColor(Color.red);
+        g.fillRect(holeX + ballDiameter, holeY - 25, 20, 10);
+
+        g.setColor(Color.black);
+        g.fillRect(holeX + ballDiameter, holeY - 25, 4, 25);
 
         // Draw balls
         for (Ball ball : balls) {
             int x = (int) (Math.round(ball.getPosX()) % GUIWidth ); // Scale correctly
-            int y = getHeight() / 2 - ballDiameter;
-            g.setColor(new Color(131, 125, 4));
+            int y = getHeight() - getHeight()/3 - ballDiameter;
+            g.setColor(new Color(255, 255, 255));
             g.fillOval(x, y, ballDiameter, ballDiameter);
         }
 
         // Draw elite balls
         for (Ball elite : elites) {
             int x = (int) (elite.getPosX() % GUIWidth); // Scale correctly
-            int y = getHeight() / 2 - ballDiameter;
-            g.setColor(new Color(128, 0, 128));
+            int y = getHeight() - getHeight()/3 - ballDiameter;
+            g.setColor(new Color(5, 100, 190));
             g.fillOval(x, y, ballDiameter, ballDiameter);
         }
     }
