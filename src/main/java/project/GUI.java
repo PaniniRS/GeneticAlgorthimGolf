@@ -24,8 +24,10 @@ public class GUI extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        final int ballDiameter = 16;
 
-        g.drawString("Generation", getWidth()/2, getHeight() - 20);
+        // Draw the generation label
+        g.drawString("Generation", getWidth() / 2, getHeight() - 20);
 
         // Draw grass
         g.setColor(new Color(34, 139, 34));
@@ -33,24 +35,24 @@ public class GUI extends JPanel {
 
         // Draw hole
         g.setColor(new Color(0, 9, 0));
-        int holeX = (int) (HOLEPOS / getWidth());
+        int holeX = (int) (HOLEPOS % GUIWidth); // Scale correctly
         int holeY = getHeight() / 2;
         g.fillRect(holeX - 5, holeY - 5, 24, 50);
 
         // Draw balls
         for (Ball ball : balls) {
-            int x = (int) (ball.getPosX() / getWidth());
-            int y = getHeight() / 2 - 8;
+            int x = (int) (Math.round(ball.getPosX()) % GUIWidth ); // Scale correctly
+            int y = getHeight() / 2 - ballDiameter;
             g.setColor(new Color(131, 125, 4));
-            g.fillOval(x, y, 8, 8);
+            g.fillOval(x, y, ballDiameter, ballDiameter);
         }
 
         // Draw elite balls
         for (Ball elite : elites) {
-            int x = (int) (elite.getPosX() * getWidth() / POSX_INIT_BOUND);
-            int y = getHeight() / 2 - 8;
+            int x = (int) (elite.getPosX() % GUIWidth); // Scale correctly
+            int y = getHeight() / 2 - ballDiameter;
             g.setColor(new Color(128, 0, 128));
-            g.fillOval(x, y, 8, 8);
+            g.fillOval(x, y, ballDiameter, ballDiameter);
         }
     }
 }
