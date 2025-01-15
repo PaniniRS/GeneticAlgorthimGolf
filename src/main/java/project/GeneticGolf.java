@@ -49,9 +49,12 @@ public class GeneticGolf {
             System.out.println("-----------------------------");
 
             if(getOptimalReached() == 1) {
-                assert panel != null;
-                panel.updateVisualization(population, newBestPop, i);
-                break;}
+                if(GUI_TOGGLE) {
+                    assert panel != null;
+                    panel.updateVisualization(population, newBestPop, i);
+                }
+                break;
+            }
 
         //Crossover
             for (Ball ball : population) {
@@ -103,7 +106,7 @@ public class GeneticGolf {
         JFrame frame = new JFrame("Genetic Golf Visualization");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(panel);
-        frame.setSize(800, 400);
+        frame.setSize(GUIWidth, GUIHeight);
         frame.setVisible(true);
     }
 
