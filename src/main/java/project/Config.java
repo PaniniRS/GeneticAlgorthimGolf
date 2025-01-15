@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Config {
     public static final int GENERATIONS = 500_000;
-    public static final double HOLEPOS = 5000.0;
+    public static final double HOLEPOS = 10000.0;
     public static final int POPSIZE = 1000;
     public static final int BEST_POP_TO_GET = 4;
 
@@ -16,10 +16,13 @@ public class Config {
     public static final double DRAG = 0.5;
     public static final double TICK = 0.006;
 
+    public static final int GUIWidth = 600;
+    public static final int GUIHeight = 400;
+
     public static final int SEED = 1;
 
     public static final int ANGLE_BOUND = 180;
-    public static final int VELOCITY_BOUND = 800;
+    public static final int VELOCITY_BOUND = 2500;
     public static final int POSX_INIT_BOUND = 100;
 
     private static int OPTIMAL_REACHED = 0;
