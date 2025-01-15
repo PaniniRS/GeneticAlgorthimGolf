@@ -43,7 +43,7 @@ public class GUI extends JPanel {
         g.setColor(new Color(20, 50, 15));
         int holeX = (int) (HOLEPOS % GUIWidth); // Scale correctly
         int holeY = getHeight() - getHeight()/3;
-        g.fillRect(holeX, holeY, 24, 12);
+        g.fillRect(holeX + ballDiameter/8, holeY, 24, 12);
 
         //Draw hole flag
         g.setColor(Color.red);
