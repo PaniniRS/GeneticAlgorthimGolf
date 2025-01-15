@@ -1,5 +1,6 @@
 package project;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -12,9 +13,14 @@ import static project.Config.*;
 public class GeneticGolf {
     static Random r = GLOBAL_RANDOM;
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = generatePopulation();
+
+        GUI panel = GUI_TOGGLE ? new GUI() : null;
+        if (panel != null) {
+            SwingUtilities.invokeLater(() -> createAndShowGUI(panel));
+        }
 
         for (int i = 0; i < GENERATIONS; i++) {
         //Fitness
@@ -33,6 +39,7 @@ public class GeneticGolf {
                 if(tempBall.getFitness() >= 0.95) {
                     System.out.println("!!!! Reached optimal after " + i + " generations !!!!");
                     System.out.println("Final fitness of "  + j +" th best: " + tempBall.getFitness());
+                    newBestPop.add(tempBall.copy());
                     Config.optimalToggle();
                     break;
                 }
@@ -41,7 +48,13 @@ public class GeneticGolf {
             }
             System.out.println("-----------------------------");
 
-            if(getOptimalReached() == 1) {break;}
+            if(getOptimalReached() == 1) {
+                if(GUI_TOGGLE) {
+                    assert panel != null;
+                    panel.updateVisualization(population, newBestPop, i);
+                }
+                break;
+            }
 
         //Crossover
             for (Ball ball : population) {
@@ -60,11 +73,19 @@ public class GeneticGolf {
             //Adding ELITE chromosome to population
             newPop.addAll(newBestPop);
             population = newPop;
+
+            if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
+                panel.updateVisualization(population, newBestPop, i);
+            }
         }//genLoop
 
         System.out.println("Time: " + (System.currentTimeMillis() - startTime) + " ms");
         System.out.println("      " + (System.currentTimeMillis() - startTime)/1000.00 + " s");
     }//main
+
+////////////////////////////////////
+////////////////////////////////////
+////////////////////////////////////
 
     private static ArrayList<Ball> generatePopulation(){
         ArrayList<Ball> pop = new ArrayList<>();
@@ -79,5 +100,14 @@ public class GeneticGolf {
 
     private static Ball selectRandom(ArrayList<Ball> population) {
         return population.get(r.nextInt(population.size())); //nextInt is upper exclusive
+    }//selectRandom
+
+    private static void createAndShowGUI(GUI panel) {
+        JFrame frame = new JFrame("Genetic Golf Visualization");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+        frame.setSize(GUIWidth, GUIHeight);
+        frame.setVisible(true);
     }
+
 }//class

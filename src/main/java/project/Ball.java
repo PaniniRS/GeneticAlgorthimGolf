@@ -86,4 +86,8 @@ public class Ball {
     public Ball copy(){
         return new Ball(posX, posY, velocity, angle, fitness);
     }
+
+    public double getPosX() {
+        return posX;
+    }
 }
