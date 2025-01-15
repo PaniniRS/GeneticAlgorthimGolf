@@ -74,7 +74,7 @@ public class GeneticGolf {
             newPop.addAll(newBestPop);
             population = newPop;
 
-            if (GUI_TOGGLE && i % 25 == 0 && panel != null) {
+            if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }//genLoop
