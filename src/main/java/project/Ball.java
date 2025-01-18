@@ -47,7 +47,7 @@ public class Ball {
     //Used for calculating fitness
     public void updateBall(){
         posX += velocity * Math.cos(Math.toRadians(angle)) * TICK;
-        posY += velocity * Math.sin(Math.toRadians(angle)) * TICK - 0.5 * GRAVITY * Math.pow(TICK, 2);
+        posY += velocity * Math.sin(Math.toRadians(angle)) * TICK - GRAVITY_DOWN_VECTOR;
         velocity -= DRAG;
         if (posY < 0) posY = 0;
     }
