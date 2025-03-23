@@ -1,5 +1,8 @@
 package project;
 
+import util.LogLevel;
+import util.Logger;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Random;
@@ -13,7 +16,7 @@ import static project.Config.*;
 public class GeneticGolf {
     static Random r = GLOBAL_RANDOM;
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception {
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = generatePopulation();
 
@@ -37,23 +40,23 @@ public class GeneticGolf {
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
                 if(tempBall.getFitness() >= 0.95) {
-                    System.out.println("!!!! Reached optimal after " + i + " generations !!!!");
-                    System.out.println("Final fitness of "  + j +" th best: " + tempBall.getFitness());
+                    Logger.log("!!!! Reached optimal after " + i + " generations !!!!", LogLevel.Success);
+                    Logger.log("Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
                     newBestPop.add(tempBall.copy());
                     Config.optimalToggle();
                     break;
                 }
-                System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + tempBall.getFitness());
+//                System.out.println("Gen: " + i + " | BestN: " + j + " | Fitness:" + tempBall.getFitness());
                 newBestPop.add(tempBall.copy());
             }
-            System.out.println("-----------------------------");
+//            System.out.println("-----------------------------");
 
             if(getOptimalReached() == 1) {
                 if(GUI_TOGGLE) {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
                 }
-                break;
+                throw new Exception("Optimum reached");
             }
 
         //Crossover

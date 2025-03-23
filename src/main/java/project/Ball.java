@@ -18,7 +18,7 @@ public class Ball {
         this.angle = angle;
         this.fitness = fitness;
     }
-
+/////////////////////////////////////
     //RunFitness
     public double evaluateFitness(){
         while(!isStopped()){
