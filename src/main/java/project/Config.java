@@ -1,8 +1,15 @@
 package project;
 
+import util.LogLevel;
+import util.Logger;
+
 import java.util.Random;
+import java.util.concurrent.CyclicBarrier;
 
 public class Config {
+    public static final int THREADS = Runtime.getRuntime().availableProcessors();
+    public static CyclicBarrier BARRIER = new CyclicBarrier(THREADS,  () -> Logger.log("All threads passed BARRIER", LogLevel.Status));
+
     public static final int GENERATIONS = 500_000;
     public static final double HOLEPOS = 10000.0;
     public static final int POPSIZE = 1000;
@@ -26,12 +33,19 @@ public class Config {
     public static final int POSX_INIT_BOUND = 100;
 
     private static int OPTIMAL_REACHED = 0;
-    public static boolean GUI_TOGGLE = true;
+    public static boolean GUI_TOGGLE = false;
+    private static boolean RANDOM_USED = false;
 
-    public static final Random GLOBAL_RANDOM = new Random(SEED);
+    public static Random GLOBAL_RANDOM = new Random(SEED);
 
     public static void optimalToggle(){
         OPTIMAL_REACHED = Math.abs(OPTIMAL_REACHED - 1);
+    }
+
+    public static Random useGlobalRandom(){
+        if(RANDOM_USED){GLOBAL_RANDOM = new Random(SEED); RANDOM_USED = false;}
+        RANDOM_USED = true;
+        return GLOBAL_RANDOM;
     }
     public static int getOptimalReached(){
         return OPTIMAL_REACHED;
