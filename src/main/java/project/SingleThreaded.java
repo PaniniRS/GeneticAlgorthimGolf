@@ -29,7 +29,7 @@ public class SingleThreaded {
             //Selection
             //Sort the array based on fitness
             population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
-            ArrayList<Ball> newPop = new ArrayList<>();
+            ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
             ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
 
             // Get the x best chromosomes/balls
@@ -70,6 +70,7 @@ public class SingleThreaded {
 
             //Adding ELITE chromosome to population
             newPop.addAll(newBestPop);
+
             population = newPop;
 
             if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
