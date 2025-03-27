@@ -9,7 +9,11 @@ import java.util.Random;
 import static project.Config.*;
 
 public class SingleThreaded {
-    public void Run(Random r)  {
+    Random r;
+    SingleThreaded(Random r){
+        this.r = r;
+    }
+    public void run()  {
         ArrayList<Ball> population = Helper.generatePopulation(r);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
