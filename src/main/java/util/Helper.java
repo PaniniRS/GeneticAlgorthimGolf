@@ -36,4 +36,11 @@ public class Helper {
         return pop;
     }//GeneratePopulationMethod
 
+    public static void printPopulation(ArrayList<Ball> pop){
+        Logger.log("\n\n\n\n\nPOPULATION:");
+        for (int i = 0; i < POPSIZE; i++) {
+            Logger.log("\t ("+i+")" + pop.get(i).getFitness(), LogLevel.Status);
+        }
+        Logger.log("\n\n\n\n\nPOPULATION:");
+    }
 }
