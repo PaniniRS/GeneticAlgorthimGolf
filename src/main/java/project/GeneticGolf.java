@@ -24,6 +24,7 @@ public class GeneticGolf {
         long startTime = System.currentTimeMillis();
 
         new SingleThreaded(r).run();
+        optimalToggle();
 
         Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
     }
@@ -65,6 +66,7 @@ public class GeneticGolf {
             // Get the x best chromosomes/balls
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
+                Logger.log("["+j+"] Elite selection: " + tempBall.getFitness(), LogLevel.Status);
                 if(tempBall.getFitness() >= 0.95) {
                     Logger.log("GEN["+i+"] "+"!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
 
