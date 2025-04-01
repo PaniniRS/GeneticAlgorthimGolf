@@ -1,6 +1,8 @@
 package project;
 import util.Logger;
 
+import java.util.Random;
+
 import static project.Config.*;
 
 public class Ball {
@@ -22,7 +24,7 @@ public class Ball {
     }
 /////////////////////////////////////
     //RunFitness
-    public double evaluateFitness(){
+    public double evaluateFitness(Random r){
         while(!isStopped()){
                 updateBall();
             }
@@ -32,13 +34,10 @@ public class Ball {
             return 2000;
         }
 
-        //Ball in starting area, ex 180 angle
-//        if (posX <= GeneticGolf.POSX_INIT_BOUND){
-//            return -10;
-//        }
         //Calculate fitness when ball isn't in hole
         //TODO: Look at this calulation further
-        return 1.0 / (1.0 + distance) + GLOBAL_RANDOM.nextDouble() * NOISE;
+//        return 1.0 / (1.0 + distance) + r.nextDouble() * NOISE; //TODO: Make this determinstic somehow for both seq and parallel so it adds more fun to the generations
+        return 1.0 / (1.0 + distance);
     }
 
     //CheckStopped
@@ -55,23 +54,23 @@ public class Ball {
     }
 
     //Crossover
-    public Ball crossover(Ball b1){
-        double NposX = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.posX : b1.posX;
-        double Nvelocity = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.velocity : b1.velocity;
-        double Nangle = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.angle : b1.angle;
+    public Ball crossover(Ball b1, Random r){
+        double NposX = r.nextDouble() > 0.5 ? this.posX : b1.posX;
+        double Nvelocity = r.nextDouble() > 0.5 ? this.velocity : b1.velocity;
+        double Nangle = r.nextDouble() > 0.5 ? this.angle : b1.angle;
         return new Ball(NposX,0, Nvelocity, Nangle);
     }
 
     //Mutation
-    public void mutate(double randomNumber){
+    public void mutate(double randomNumber, Random r){
         //RANDOM RESET Mutation, check this in the morning
         //30% for one gene to mutate
         if (randomNumber < 0.3){
-            this.posX = GLOBAL_RANDOM.nextDouble() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
+            this.posX = r.nextDouble() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
         } else if (randomNumber >= 0.3 &&  randomNumber < 0.6) {
-            this.velocity = GLOBAL_RANDOM.nextDouble() * VELOCITY_BOUND;
+            this.velocity = r.nextDouble() * VELOCITY_BOUND;
         }else{
-            this.angle = GLOBAL_RANDOM.nextDouble() * ANGLE_BOUND;
+            this.angle = r.nextDouble() * ANGLE_BOUND;
         }
     }
 

@@ -36,19 +36,11 @@ public class Config {
 
     private static int OPTIMAL_REACHED = 0;
     public static boolean GUI_TOGGLE = false;
-    private static boolean RANDOM_USED = false;
-
-    public static Random GLOBAL_RANDOM = new Random(SEED);
 
     public static void optimalToggle(){
         OPTIMAL_REACHED = Math.abs(OPTIMAL_REACHED - 1);
     }
 
-    public static Random useGlobalRandom(){
-        if(RANDOM_USED){GLOBAL_RANDOM = new Random(SEED); RANDOM_USED = false;}
-        RANDOM_USED = true;
-        return GLOBAL_RANDOM;
-    }
     public static int getOptimalReached(){
         return OPTIMAL_REACHED;
     }

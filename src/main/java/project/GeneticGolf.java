@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 
 import static project.Config.*;
 import static util.Helper.Crossover;
+import static util.Helper.selectRandom;
 
 import util.Helper;
 import util.LogLevel;
@@ -22,7 +23,7 @@ public class GeneticGolf {
 
 
     private static void RunSingleThreaded(){
-        Random r = useGlobalRandom();
+        Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
 
         new SingleThreaded(r).run();
@@ -32,7 +33,7 @@ public class GeneticGolf {
     }
 
     private static void RunMultiThreaded() throws Exception {
-        Random r = useGlobalRandom();
+        Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = Helper.generatePopulation(r);
         int indexCut = (int) Math.floor(population.size() / THREADS); //TODO: Check if it rounds the cuts
@@ -48,7 +49,7 @@ public class GeneticGolf {
             for (int j = 0; j < THREADS; j++) {
                 int indexStart = j*indexCut;
                 int indexEnd = j*indexCut+indexCut;
-                THREADPOOL.submit(new MultiThreaded(r, indexStart, indexEnd, population));
+                THREADPOOL.submit(new MultiThreaded(new Random(SEED + j), indexStart, indexEnd, population));
             }
             BARRIER.await(1, TimeUnit.MINUTES);
 
@@ -94,7 +95,7 @@ public class GeneticGolf {
             for (Ball ball : newPop) {
                 double tempDouble = r.nextDouble();
                 if (tempDouble < MUTATION_RATE) {
-                    ball.mutate(tempDouble * 10);
+                    ball.mutate(tempDouble * 10, r);
                 }
             }
 

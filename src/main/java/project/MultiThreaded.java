@@ -26,7 +26,7 @@ public class MultiThreaded implements Runnable{
         for (int i = indexStart; i < indexEnd; i++) {
             //Fitness
             Ball ball = population.get(i);
-            ball.setFitness(ball.evaluateFitness());
+            ball.setFitness(ball.evaluateFitness(r));
         }//indexLoop
         try {
             BARRIER.await();

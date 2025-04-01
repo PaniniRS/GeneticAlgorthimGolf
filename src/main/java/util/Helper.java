@@ -45,13 +45,22 @@ public class Helper {
     }
 
     public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop, Random r) {
-        for (Ball ball : population) {
+//        for (Ball ball : population) {
+//            if (r.nextDouble() < CROSSOVER_RATE) {
+//                newPop.add(ball.crossover(Helper.selectRandom(population, r)));
+//            }else{
+//                newPop.add(ball);
+//            }
+//            if (newPop.size()==POPSIZE-4) break;
+//        }
+
+        for (int i = 0; i < POPSIZE-BEST_POP_TO_GET; i++) {
+            Ball b = population.get(i);
             if (r.nextDouble() < CROSSOVER_RATE) {
-                newPop.add(ball.crossover(Helper.selectRandom(population, r)));
+                newPop.add(b.crossover(Helper.selectRandom(population, r), r));
             }else{
-                newPop.add(ball);
+                newPop.add(b);
             }
-            if (newPop.size()==POPSIZE-4) break;
         }
     }
 

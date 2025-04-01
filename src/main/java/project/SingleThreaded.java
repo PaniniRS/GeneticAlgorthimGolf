@@ -24,7 +24,7 @@ public class SingleThreaded {
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness
             for (Ball ball : population) {
-                ball.setFitness(ball.evaluateFitness());
+                ball.setFitness(ball.evaluateFitness(r));
             }
             //Selection
             //Sort the array based on fitness
@@ -60,7 +60,7 @@ public class SingleThreaded {
             for (Ball ball : newPop) {
                 double tempDouble = r.nextDouble();
                 if (tempDouble < MUTATION_RATE) {
-                    ball.mutate(tempDouble * 10);
+                    ball.mutate(tempDouble * 10, r);
                 }
             }
             //Adding ELITE chromosome to population
