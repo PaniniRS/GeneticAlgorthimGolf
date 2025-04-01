@@ -43,4 +43,15 @@ public class Helper {
         }
         Logger.log("\n\n\n\n\nPOPULATION:");
     }
+
+    public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop, Random r) {
+        for (Ball ball : population) {
+            if (r.nextDouble() < CROSSOVER_RATE) {
+                Ball b = Helper.selectRandom(population, r);
+                Ball c = b.crossover(ball);
+                newPop.add(c);
+            }
+            newPop.add(ball.copy());
+        }
+    }
 }
