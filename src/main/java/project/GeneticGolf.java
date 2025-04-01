@@ -44,29 +44,23 @@ public class GeneticGolf {
         }
 
         for (int i = 0; i < GENERATIONS; i++) {
-            Logger.log("GEN[" + i + "]" + "started...", LogLevel.Status);
             //Fitness Multithreaded
             for (int j = 0; j < THREADS; j++) {
                 int indexStart = j*indexCut;
                 int indexEnd = j*indexCut+indexCut;
-//                Logger.log("GEN["+i+"] "+"Submitting array at " + indexStart + " to " + indexEnd, LogLevel.Status);
                 THREADPOOL.submit(new MultiThreaded(r, indexStart, indexEnd, population));
-//                Logger.log("GEN["+i+"] "+"Submitted array at " + indexStart + " to " + indexEnd, LogLevel.Status);
             }
-            Logger.log("GEN["+i+"] "+"Waiting for barrier...", LogLevel.Status);
             BARRIER.await(1, TimeUnit.MINUTES);
-            Logger.log("GEN["+i+"] "+"Barrier passed", LogLevel.Status);
 
             //Selection
             //Sort the array based on fitness
             population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
             ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
             ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
-            Logger.log("GEN["+i+"] "+"Selection end", LogLevel.Status);
+
             // Get the x best chromosomes/balls
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
-//                Logger.log("["+j+"] Elite selection: " + tempBall.getFitness(), LogLevel.Status);
                 if(tempBall.getFitness() >= 0.95) {
                     Logger.log("GEN["+i+"] "+"!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
 
@@ -77,7 +71,6 @@ public class GeneticGolf {
                 }
                 newBestPop.add(tempBall.copy());
             }
-            Logger.log("GEN["+i+"] "+"Elite balls found", LogLevel.Status);
 
             if(getOptimalReached() == 1) {
                 Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
@@ -96,7 +89,6 @@ public class GeneticGolf {
             //Crossover
             Helper.Crossover(population, newPop, r);
 
-            Logger.log("GEN["+i+"] "+"Crossover end", LogLevel.Status);
 
             //Mutation
             for (Ball ball : newPop) {
@@ -105,7 +97,6 @@ public class GeneticGolf {
                     ball.mutate(tempDouble * 10);
                 }
             }
-            Logger.log("GEN["+i+"] "+"Mutation end", LogLevel.Status);
 
             //Adding ELITE chromosome to population
             population = newPop;
@@ -114,10 +105,8 @@ public class GeneticGolf {
                 throw new Exception("POPSIZE ISNT THE SAME");
             }
 
-//            Helper.printPopulation(population);
-            Logger.log("GEN["+i+"] "+"Elite Added", LogLevel.Status);
             if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
-                Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
+//                Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
                 panel.updateVisualization(population, newBestPop, i);
             }
         }

@@ -8,7 +8,9 @@ import java.util.concurrent.CyclicBarrier;
 
 public class Config {
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
-    public static CyclicBarrier BARRIER = new CyclicBarrier(THREADS + 1,  () -> Logger.log("All threads passed BARRIER", LogLevel.Status));
+    public static CyclicBarrier BARRIER = new CyclicBarrier(THREADS + 1,  null);
+//Logger.log("All threads passed BARRIER", LogLevel.Status)
+    public static final boolean LOGGING = false;
 
     public static final int GENERATIONS = 500_000;
     public static final double HOLEPOS = 10000.0;
