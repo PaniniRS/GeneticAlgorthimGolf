@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static project.Config.*;
-import static util.Helper.Crossover;
 
 public class SingleThreaded {
     Random r;
     SingleThreaded(Random r){
         this.r = r;
     }
-    public void run() {
+    public void run()  {
         ArrayList<Ball> population = Helper.generatePopulation(r);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
@@ -56,7 +55,7 @@ public class SingleThreaded {
             }
 
             //Crossover
-            Crossover(population, newPop, r);
+            Helper.Crossover(population, newPop, r);
             //Mutation
             for (Ball ball : newPop) {
                 double tempDouble = r.nextDouble();
@@ -64,8 +63,8 @@ public class SingleThreaded {
                     ball.mutate(tempDouble * 10);
                 }
             }
-
             //Adding ELITE chromosome to population
+
             newPop.addAll(newBestPop);
 
             population = newPop;
@@ -77,4 +76,7 @@ public class SingleThreaded {
 
 
     }
+
+
+
 }

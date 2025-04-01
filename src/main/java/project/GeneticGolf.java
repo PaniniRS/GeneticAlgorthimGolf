@@ -14,6 +14,7 @@ import javax.swing.*;
 
 public class GeneticGolf {
     public static void main(String[] args) throws Exception {
+        Logger.log("Running main");
         RunSingleThreaded();
         Logger.log("--------------------------------");
         RunMultiThreaded();
@@ -93,7 +94,7 @@ public class GeneticGolf {
             }
 
             //Crossover
-            Crossover(population, newPop, r);
+            Helper.Crossover(population, newPop, r);
 
             Logger.log("GEN["+i+"] "+"Crossover end", LogLevel.Status);
 

@@ -47,11 +47,12 @@ public class Helper {
     public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop, Random r) {
         for (Ball ball : population) {
             if (r.nextDouble() < CROSSOVER_RATE) {
-                Ball b = Helper.selectRandom(population, r);
-                Ball c = b.crossover(ball);
-                newPop.add(c);
+                newPop.add(ball.crossover(Helper.selectRandom(population, r)));
+            }else{
+                newPop.add(ball);
             }
-            newPop.add(ball.copy());
+            if (newPop.size()==POPSIZE-4) break;
         }
     }
+
 }
