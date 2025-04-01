@@ -1,4 +1,6 @@
 package project;
+import util.Logger;
+
 import static project.Config.*;
 
 public class Ball {
@@ -54,11 +56,10 @@ public class Ball {
 
     //Crossover
     public Ball crossover(Ball b1){
-        Ball newB = new Ball(posX, posY, velocity, angle);
-        newB.posX = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.posX : b1.posX;
-        newB.velocity = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.velocity : b1.velocity;
-        newB.angle = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.angle : b1.angle;
-        return newB;
+        double NposX = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.posX : b1.posX;
+        double Nvelocity = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.velocity : b1.velocity;
+        double Nangle = GLOBAL_RANDOM.nextDouble() > 0.5 ? this.angle : b1.angle;
+        return new Ball(NposX,0, Nvelocity, Nangle);
     }
 
     //Mutation
