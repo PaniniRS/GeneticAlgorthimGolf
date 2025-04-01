@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.concurrent.*;
 
 import static project.Config.*;
+import static util.Helper.Crossover;
 
 import util.Helper;
 import util.LogLevel;
@@ -12,7 +13,7 @@ import util.Logger;
 import javax.swing.*;
 
 public class GeneticGolf {
-    public static void main(String[] args) throws BrokenBarrierException, InterruptedException, TimeoutException {
+    public static void main(String[] args) throws Exception {
         RunSingleThreaded();
         Logger.log("--------------------------------");
         RunMultiThreaded();
@@ -29,13 +30,11 @@ public class GeneticGolf {
         Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
     }
 
-    private static void RunMultiThreaded() throws BrokenBarrierException, InterruptedException, TimeoutException {
+    private static void RunMultiThreaded() throws Exception {
         Random r = useGlobalRandom();
         long startTime = System.currentTimeMillis();
-
         ArrayList<Ball> population = Helper.generatePopulation(r);
-        int indexCut = (int) Math.floor(population.size() / THREADS); //TODO
-
+        int indexCut = (int) Math.floor(population.size() / THREADS); //TODO: Check if it rounds the cuts
         ExecutorService THREADPOOL = Executors.newFixedThreadPool(THREADS);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
@@ -49,12 +48,12 @@ public class GeneticGolf {
             for (int j = 0; j < THREADS; j++) {
                 int indexStart = j*indexCut;
                 int indexEnd = j*indexCut+indexCut;
-                Logger.log("GEN["+i+"] "+"Submitting array at " + indexStart + " to " + indexEnd, LogLevel.Status);
+//                Logger.log("GEN["+i+"] "+"Submitting array at " + indexStart + " to " + indexEnd, LogLevel.Status);
                 THREADPOOL.submit(new MultiThreaded(r, indexStart, indexEnd, population));
-                Logger.log("GEN["+i+"] "+"Submitted array at " + indexStart + " to " + indexEnd, LogLevel.Status);
+//                Logger.log("GEN["+i+"] "+"Submitted array at " + indexStart + " to " + indexEnd, LogLevel.Status);
             }
             Logger.log("GEN["+i+"] "+"Waiting for barrier...", LogLevel.Status);
-            BARRIER.await(5, TimeUnit.MINUTES);
+            BARRIER.await(1, TimeUnit.MINUTES);
             Logger.log("GEN["+i+"] "+"Barrier passed", LogLevel.Status);
 
             //Selection
@@ -66,7 +65,7 @@ public class GeneticGolf {
             // Get the x best chromosomes/balls
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
-                Logger.log("["+j+"] Elite selection: " + tempBall.getFitness(), LogLevel.Status);
+//                Logger.log("["+j+"] Elite selection: " + tempBall.getFitness(), LogLevel.Status);
                 if(tempBall.getFitness() >= 0.95) {
                     Logger.log("GEN["+i+"] "+"!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
 
@@ -94,11 +93,7 @@ public class GeneticGolf {
             }
 
             //Crossover
-            for (Ball ball : population) {
-                if (r.nextDouble() < CROSSOVER_RATE) {
-                    newPop.add(Helper.selectRandom(population, r).crossover(Helper.selectRandom(population, r)));
-                }
-            }
+            Crossover(population, newPop, r);
 
             Logger.log("GEN["+i+"] "+"Crossover end", LogLevel.Status);
 
@@ -110,14 +105,15 @@ public class GeneticGolf {
                 }
             }
             Logger.log("GEN["+i+"] "+"Mutation end", LogLevel.Status);
+
             //Adding ELITE chromosome to population
-
-
-//            TODO: ERROR HERE IN LOGIC
-            newPop.addAll(newBestPop);
             population = newPop;
+            population.addAll(newBestPop);
+            if (population.size() != POPSIZE){
+                throw new Exception("POPSIZE ISNT THE SAME");
+            }
 
-            Helper.printPopulation(population);
+//            Helper.printPopulation(population);
             Logger.log("GEN["+i+"] "+"Elite Added", LogLevel.Status);
             if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
                 Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
