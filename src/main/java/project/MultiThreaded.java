@@ -23,18 +23,12 @@ public class MultiThreaded implements Runnable{
     }
     @Override
     public void run()  {
-        Logger.log("Task [" + Thread.currentThread().getName() + "] evaluating range [" + indexStart + ", " + indexEnd + ")", LogLevel.Debug);
-//        Logger.log("Running MultiThreaded");
         for (int i = indexStart; i < indexEnd; i++) {
             //Fitness
             Ball ball = population.get(i);
-//            Logger.log("\t-Init ball, fitness: " + ball.getFitness());
             ball.setFitness(ball.evaluateFitness());
-//            Logger.log("\t--Eval Ball, fitness: " + ball.getFitness());
         }//indexLoop
-        Logger.log("Finished eval …");
         try {
-            Logger.log("\tø Waiting for barrier");
             BARRIER.await();
         } catch (InterruptedException | BrokenBarrierException e) {
             throw new RuntimeException(e);
