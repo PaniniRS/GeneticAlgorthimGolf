@@ -57,10 +57,11 @@ public class SingleThreaded {
             //Crossover
             Helper.Crossover(population, newPop, r);
             //Mutation
-            for (Ball ball : newPop) {
+            for (int j = 0; j < newPop.size(); j++) {
+                Ball b = newPop.get(j);
                 double tempDouble = r.nextDouble();
                 if (tempDouble < MUTATION_RATE) {
-                    ball.mutate(tempDouble * 10, r);
+                    b.mutate(tempDouble * 10, r);
                 }
             }
             //Adding ELITE chromosome to population
