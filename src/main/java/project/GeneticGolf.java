@@ -1,5 +1,6 @@
 package project;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 
@@ -45,16 +46,18 @@ public class GeneticGolf {
 
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness Multithreaded
-            multiNonAltering(indexCut, THREADPOOL, population, GeneticFunction.Fitness);
+            multiGenetic(null, indexCut, THREADPOOL, population, null, GeneticFunction.Fitness);
             BARRIER.await(1, TimeUnit.MINUTES);
+
 
             //Selection
             //Sort the array based on fitness
-            population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
+            population.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness())
+            );
             ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
             ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
 
-            // Get the x best chromosomes/balls
+            // Get the best chromosomes/balls
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
                 if(tempBall.getFitness() >= 0.95) {
@@ -83,26 +86,8 @@ public class GeneticGolf {
             }
 
             //Crossover -> TODO: multithread w/ return
-
-//-----------------------
-//            indexCut = (int) Math.floor((POPSIZE-BEST_POP_TO_GET) / THREADS);
-//            ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
-//
-//            for (int j = 0; j < THREADS; j++){
-//                int indexStart = j*indexCut;
-//                int indexEnd = (j == THREADS-1) ? POPSIZE-BEST_POP_TO_GET : j*indexCut+indexCut;
-//
-//                tasks.add(new MultiThreadedCrossover(new Random(SEED + j), indexStart, indexEnd, population));
-//            }
-//
-//            //Running all Threads and waiting to finish
-//            List<Future<List<Ball>>> futures = THREADPOOL.invokeAll(tasks);
-//            //Joining the results into the newPop array
-//            for (Future<List<Ball>> future : futures) {
-//                newPop.addAll(future.get());
-//            }
-//-----------------------
-            Helper.Crossover(population, newPop, r);
+            multiGenetic(r, indexCut, THREADPOOL, population, newPop, GeneticFunction.Crossover);
+//            Helper.Crossover(population, newPop, r);
 
 
             //Mutation -> TODO: multithread on newpop
@@ -114,7 +99,7 @@ public class GeneticGolf {
             }
 
             //Mutation multithread
-// multiNonAltering(indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
+//            multiGenetic(r,indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
 //            BARRIER.await(10, TimeUnit.MINUTES);
 
             //Adding ELITE chromosome to population
@@ -131,23 +116,36 @@ public class GeneticGolf {
         }
     }
 
-    private static void multiNonAltering(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, GeneticFunction funcType) {
+    private static void multiGenetic(Random r, int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, ArrayList<Ball> newPop, GeneticFunction funcType) throws ExecutionException, InterruptedException {
+        if (funcType == GeneticFunction.Crossover){
+
+            ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
+
+            for (int k = 0; k < THREADS; k++){
+                int indexStart = k* indexCut;
+                int indexEnd = (indexCut*k+indexCut != population.size()-BEST_POP_TO_GET && k == THREADS-1) ? population.size()-BEST_POP_TO_GET : k * indexCut + indexCut;
+                tasks.add(new MultiThreadedCrossover(indexStart, indexEnd, population));
+            }
+            //Running all Threads and waiting to finish
+            List<Future<List<Ball>>> futures = THREADPOOL.invokeAll(tasks);
+            //Joining the results into the newPop array
+            for (Future<List<Ball>> future : futures) {
+                newPop.addAll(future.get());
+            }
+        }else{
         for (int j = 0; j < THREADS; j++) {
             int indexStart = j* indexCut;
             int indexEnd = (indexCut*j+indexCut != population.size() && j == THREADS-1) ? population.size() : j * indexCut + indexCut;
             switch (funcType){
-                case Selection -> {
-                }
-                case Crossover -> {
-                }
                 case Mutation -> {
-                    THREADPOOL.submit(new MultiThreadedMutation(new Random(SEED + j), indexStart, indexEnd, population));
+                    THREADPOOL.submit(new MultiThreadedMutation(r, indexStart, indexEnd, population));
                 }
                 case Fitness -> {
                     THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
                 }
             }
-
+        }
         }
     }
+
 }//class
