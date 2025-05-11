@@ -106,16 +106,16 @@ public class GeneticGolf {
 
 
             //Mutation -> TODO: multithread on newpop
-//            for (Ball ball : newPop) {
-//                double tempDouble = r.nextDouble();
-//                if (tempDouble < MUTATION_RATE) {
-//                    ball.mutate(tempDouble * 10, r);
-//                }
-//            }
+            for (Ball ball : newPop) {
+                double tempDouble = r.nextDouble();
+                if (tempDouble < MUTATION_RATE) {
+                    ball.mutate(tempDouble * 10, r);
+                }
+            }
 
             //Mutation multithread
- multiNonAltering(indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
-            BARRIER.await(1, TimeUnit.MINUTES);
+// multiNonAltering(indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
+//            BARRIER.await(10, TimeUnit.MINUTES);
 
             //Adding ELITE chromosome to population
             population = newPop;
@@ -134,7 +134,7 @@ public class GeneticGolf {
     private static void multiNonAltering(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, GeneticFunction funcType) {
         for (int j = 0; j < THREADS; j++) {
             int indexStart = j* indexCut;
-            int indexEnd =j* indexCut + indexCut;
+            int indexEnd = (indexCut*j+indexCut != population.size() && j == THREADS-1) ? population.size() : j * indexCut + indexCut;
             switch (funcType){
                 case Selection -> {
                 }
