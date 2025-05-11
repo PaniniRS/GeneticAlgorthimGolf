@@ -35,8 +35,6 @@ public class Ball {
         }
 
         //Calculate fitness when ball isn't in hole
-        //TODO: Look at this calulation further
-//        return 1.0 / (1.0 + distance) + r.nextDouble() * NOISE; //TODO: Make this determinstic somehow for both seq and parallel so it adds more fun to the generations
         return 1.0 / (1.0 + distance);
     }
 
