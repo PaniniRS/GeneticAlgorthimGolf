@@ -1,19 +1,13 @@
 package project;
-
 import util.Helper;
-import util.Logger;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 
 import static project.Config.*;
 
 public class MultiThreadedCrossover implements Callable<List<Ball>> {
-    Random r;
     ArrayList<Ball> population;
     ArrayList<Ball> localNewPop;
     int indexStart, indexEnd;

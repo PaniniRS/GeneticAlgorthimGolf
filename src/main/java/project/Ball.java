@@ -1,6 +1,4 @@
 package project;
-import util.Logger;
-
 import java.util.Random;
 
 import static project.Config.*;

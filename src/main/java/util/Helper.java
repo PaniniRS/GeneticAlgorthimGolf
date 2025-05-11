@@ -89,12 +89,8 @@ public class Helper {
                 int indexStart = j* indexCut;
                 int indexEnd = (indexCut*j+indexCut != population.size() && j == THREADS-1) ? population.size() : j * indexCut + indexCut;
                 switch (funcType){
-                    case Mutation -> {
-                        THREADPOOL.submit(new MultiThreadedMutation(indexStart, indexEnd, population, generation));
-                    }
-                    case Fitness -> {
-                        THREADPOOL.submit(new MultiThreadedFitness(indexStart, indexEnd, population));
-                    }
+                    case Mutation -> THREADPOOL.submit(new MultiThreadedMutation(indexStart, indexEnd, population, generation));
+                    case Fitness -> THREADPOOL.submit(new MultiThreadedFitness(indexStart, indexEnd, population));
                 }
             }
         }

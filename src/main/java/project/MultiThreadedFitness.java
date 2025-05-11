@@ -1,7 +1,6 @@
 package project;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 
 import static project.Config.*;

@@ -1,7 +1,5 @@
 package project;
 
-import util.Logger;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;

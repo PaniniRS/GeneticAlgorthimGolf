@@ -1,16 +1,10 @@
 package project;
 
-import util.LogLevel;
-import util.Logger;
-
-import java.util.Random;
 import java.util.concurrent.CyclicBarrier;
 
 public class Config {
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
     public static CyclicBarrier BARRIER = new CyclicBarrier(THREADS + 1,  null);
-//Logger.log("All threads passed BARRIER", LogLevel.Status)
-    public static final boolean LOGGING = false;
 
     public static final int GENERATIONS = 500_000;
     public static final double HOLEPOS = 500000.0;
