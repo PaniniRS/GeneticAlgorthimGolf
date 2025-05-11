@@ -51,7 +51,7 @@ public class Ball {
         if (posY < 0) posY = 0;
     }
 
-    //Crossover
+    //crossover
     public Ball crossover(Ball b1, Random r){
         double NposX = r.nextDouble() > 0.5 ? this.posX : b1.posX;
         double Nvelocity = r.nextDouble() > 0.5 ? this.velocity : b1.velocity;
