@@ -1,21 +1,16 @@
 package project;
 
-import util.Helper;
-import util.LogLevel;
-import util.Logger;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 
 import static project.Config.*;
 
-public class MultiThreaded implements Runnable{
+public class MultiThreadedFitness implements Runnable{
     Random r;
     ArrayList<Ball> population;
     int indexStart, indexEnd;
-    MultiThreaded(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
+    MultiThreadedFitness(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
         this.r = r;
         this.population = population;
         this.indexStart = indexStart;
