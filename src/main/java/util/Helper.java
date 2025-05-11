@@ -44,8 +44,9 @@ public class Helper {
         Logger.log("\n\n\n\n\nPOPULATION:");
     }
 
-    public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop, Random r) {
+    public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop) {
         for (int i = 0; i < POPSIZE-BEST_POP_TO_GET; i++) {
+            Random r = new Random(SEED + i);
             Ball b = population.get(i);
             if (r.nextDouble() < CROSSOVER_RATE) {
                 newPop.add(b.crossover(Helper.selectRandom(population, r), r));

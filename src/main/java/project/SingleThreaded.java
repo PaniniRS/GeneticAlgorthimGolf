@@ -55,7 +55,7 @@ public class SingleThreaded {
             }
 
             //Crossover
-            Helper.Crossover(population, newPop, r);
+            Helper.Crossover(population, newPop);
             //Mutation
             for (int j = 0; j < newPop.size(); j++) {
                 Ball b = newPop.get(j);

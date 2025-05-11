@@ -17,8 +17,7 @@ public class MultiThreadedCrossover implements Callable<List<Ball>> {
     ArrayList<Ball> population;
     ArrayList<Ball> localNewPop;
     int indexStart, indexEnd;
-    MultiThreadedCrossover(Random r, int indexStart, int indexEnd, ArrayList<Ball> population) {
-        this.r = r;
+    MultiThreadedCrossover(int indexStart, int indexEnd, ArrayList<Ball> population) {
         this.population = population;
         this.localNewPop = new ArrayList<Ball>();
         this.indexStart = indexStart;
@@ -27,6 +26,7 @@ public class MultiThreadedCrossover implements Callable<List<Ball>> {
     @Override
     public ArrayList<Ball> call()  {
         for (int i = indexStart; i < indexEnd; i++) {
+            Random r = new Random(SEED + i);
             Ball b = population.get(i);
             if (r.nextDouble() < CROSSOVER_RATE) {
                 localNewPop.add(b.crossover(Helper.selectRandom(population, r), r));
