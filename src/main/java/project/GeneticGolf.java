@@ -1,11 +1,11 @@
 package project;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static project.Config.*;
 
+import util.GeneticFunction;
 import util.Helper;
 import util.LogLevel;
 import util.Logger;
@@ -45,12 +45,7 @@ public class GeneticGolf {
 
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness Multithreaded
-            for (int j = 0; j < THREADS; j++) {
-                int indexStart = j*indexCut;
-//                int indexEnd = (j == THREADS-1) ? POPSIZE-BEST_POP_TO_GET : j*indexCut+indexCut; TODO: See why it bugs out
-                int indexEnd =j*indexCut+indexCut;
-                THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
-            }
+            multiNonAltering(indexCut, THREADPOOL, population, GeneticFunction.Fitness);
             BARRIER.await(1, TimeUnit.MINUTES);
 
             //Selection
@@ -110,13 +105,17 @@ public class GeneticGolf {
             Helper.Crossover(population, newPop, r);
 
 
-            //Mutation -> TODO: multithread
-            for (Ball ball : newPop) {
-                double tempDouble = r.nextDouble();
-                if (tempDouble < MUTATION_RATE) {
-                    ball.mutate(tempDouble * 10, r);
-                }
-            }
+            //Mutation -> TODO: multithread on newpop
+//            for (Ball ball : newPop) {
+//                double tempDouble = r.nextDouble();
+//                if (tempDouble < MUTATION_RATE) {
+//                    ball.mutate(tempDouble * 10, r);
+//                }
+//            }
+
+            //Mutation multithread
+ multiNonAltering(indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
+            BARRIER.await(1, TimeUnit.MINUTES);
 
             //Adding ELITE chromosome to population
             population = newPop;
@@ -129,6 +128,26 @@ public class GeneticGolf {
 //                Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
                 panel.updateVisualization(population, newBestPop, i);
             }
+        }
+    }
+
+    private static void multiNonAltering(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, GeneticFunction funcType) {
+        for (int j = 0; j < THREADS; j++) {
+            int indexStart = j* indexCut;
+            int indexEnd =j* indexCut + indexCut;
+            switch (funcType){
+                case Selection -> {
+                }
+                case Crossover -> {
+                }
+                case Mutation -> {
+                    THREADPOOL.submit(new MultiThreadedMutation(new Random(SEED + j), indexStart, indexEnd, population));
+                }
+                case Fitness -> {
+                    THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
+                }
+            }
+
         }
     }
 }//class
