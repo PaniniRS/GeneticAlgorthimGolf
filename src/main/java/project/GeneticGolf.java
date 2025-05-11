@@ -1,11 +1,10 @@
 package project;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.List;
 import java.util.concurrent.*;
 
 import static project.Config.*;
-import static util.Helper.Crossover;
-import static util.Helper.selectRandom;
 
 import util.Helper;
 import util.LogLevel;
@@ -48,8 +47,9 @@ public class GeneticGolf {
             //Fitness Multithreaded
             for (int j = 0; j < THREADS; j++) {
                 int indexStart = j*indexCut;
-                int indexEnd = j*indexCut+indexCut;
-                THREADPOOL.submit(new MultiThreaded(new Random(SEED + j), indexStart, indexEnd, population));
+//                int indexEnd = (j == THREADS-1) ? POPSIZE-BEST_POP_TO_GET : j*indexCut+indexCut; TODO: See why it bugs out
+                int indexEnd =j*indexCut+indexCut;
+                THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
             }
             BARRIER.await(1, TimeUnit.MINUTES);
 
@@ -87,11 +87,30 @@ public class GeneticGolf {
                 return;
             }
 
-            //Crossover
+            //Crossover -> TODO: multithread w/ return
+
+//-----------------------
+//            indexCut = (int) Math.floor((POPSIZE-BEST_POP_TO_GET) / THREADS);
+//            ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
+//
+//            for (int j = 0; j < THREADS; j++){
+//                int indexStart = j*indexCut;
+//                int indexEnd = (j == THREADS-1) ? POPSIZE-BEST_POP_TO_GET : j*indexCut+indexCut;
+//
+//                tasks.add(new MultiThreadedCrossover(new Random(SEED + j), indexStart, indexEnd, population));
+//            }
+//
+//            //Running all Threads and waiting to finish
+//            List<Future<List<Ball>>> futures = THREADPOOL.invokeAll(tasks);
+//            //Joining the results into the newPop array
+//            for (Future<List<Ball>> future : futures) {
+//                newPop.addAll(future.get());
+//            }
+//-----------------------
             Helper.Crossover(population, newPop, r);
 
 
-            //Mutation
+            //Mutation -> TODO: multithread
             for (Ball ball : newPop) {
                 double tempDouble = r.nextDouble();
                 if (tempDouble < MUTATION_RATE) {
@@ -103,7 +122,7 @@ public class GeneticGolf {
             population = newPop;
             population.addAll(newBestPop);
             if (population.size() != POPSIZE){
-                throw new Exception("POPSIZE ISNT THE SAME");
+                throw new Exception("POPSIZE ISNT THE SAME" + population.size() + "!=" + POPSIZE);
             }
 
             if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
