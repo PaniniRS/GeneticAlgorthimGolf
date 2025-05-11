@@ -1,0 +1,17 @@
+/target/classes/project/Ball.class
+/.idea/compiler.xml
+/target/classes/project/Config.class
+/target/classes/util/GeneticFunction.class
+/target/classes/project/GeneticGolf$1.class
+/target/classes/project/GeneticGolf.class
+/target/classes/project/GUI.class
+/target/classes/util/Helper.class
+/.idea/jarRepositories.xml
+/target/classes/util/Logger$1.class
+/target/classes/util/Logger.class
+/target/classes/util/LogLevel.class
+/target/classes/project/MultiThreadedCrossover.class
+/target/classes/project/MultiThreadedFitness.class
+/target/classes/project/MultiThreadedMutation.class
+/target/classes/project/SingleThreaded.class
+/.idea/uiDesigner.xml
