@@ -63,7 +63,6 @@ public class Ball {
 
     //Mutation
     public void mutate(double randomNumber, Random r){
-        //RANDOM RESET Mutation, check this in the morning
         //30% for one gene to mutate
         if (randomNumber < 0.3){
             this.posX = r.nextDouble() * POSX_INIT_BOUND; //seems fishy 1:02am 8Jan
