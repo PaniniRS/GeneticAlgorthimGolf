@@ -11,7 +11,7 @@ import static project.Config.*;
 public class MultiThreadedMutation implements Runnable{
     ArrayList<Ball> population;
     int indexStart, indexEnd, generation;
-    MultiThreadedMutation( int indexStart, int indexEnd, ArrayList<Ball> population, int generationCount){
+    public MultiThreadedMutation(int indexStart, int indexEnd, ArrayList<Ball> population, int generationCount){
         this.population = population;
         this.indexStart = indexStart;
         this.indexEnd = indexEnd;

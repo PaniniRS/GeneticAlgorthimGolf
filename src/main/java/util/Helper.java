@@ -1,11 +1,14 @@
 package util;
 
-import project.Ball;
-import project.GUI;
+import project.*;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import static project.Config.*;
 import static project.Config.POSX_INIT_BOUND;
@@ -65,5 +68,38 @@ public class Helper {
             }
         }
     }
+
+    public static void multiGenetic(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, ArrayList<Ball> newPop, GeneticFunction funcType, int generation) throws ExecutionException, InterruptedException {
+        if (funcType == GeneticFunction.Crossover){
+
+            ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
+            //Splitting the work to Threads
+            for (int k = 0; k < THREADS; k++){
+                int indexStart = k* indexCut;
+                int indexEnd = (indexCut*k+indexCut != population.size()-BEST_POP_TO_GET && k == THREADS-1) ? population.size()-BEST_POP_TO_GET : k * indexCut + indexCut;
+                tasks.add(new MultiThreadedCrossover(indexStart, indexEnd, population));
+            }
+            //Running all Threads and waiting to finish
+            List<Future<List<Ball>>> futures = THREADPOOL.invokeAll(tasks);
+            //Joining the results into the newPop array
+            for (Future<List<Ball>> future : futures) {
+                newPop.addAll(future.get());
+            }
+        }else{
+            for (int j = 0; j < THREADS; j++) {
+                int indexStart = j* indexCut;
+                int indexEnd = (indexCut*j+indexCut != population.size() && j == THREADS-1) ? population.size() : j * indexCut + indexCut;
+                switch (funcType){
+                    case Mutation -> {
+                        THREADPOOL.submit(new MultiThreadedMutation(indexStart, indexEnd, population, generation));
+                    }
+                    case Fitness -> {
+                        THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
+                    }
+                }
+            }
+        }
+    }
+
 
 }

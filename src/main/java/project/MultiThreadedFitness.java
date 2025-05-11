@@ -10,7 +10,7 @@ public class MultiThreadedFitness implements Runnable{
     Random r;
     ArrayList<Ball> population;
     int indexStart, indexEnd;
-    MultiThreadedFitness(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
+    public MultiThreadedFitness(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
         this.r = r;
         this.population = population;
         this.indexStart = indexStart;

@@ -17,7 +17,7 @@ public class MultiThreadedCrossover implements Callable<List<Ball>> {
     ArrayList<Ball> population;
     ArrayList<Ball> localNewPop;
     int indexStart, indexEnd;
-    MultiThreadedCrossover(int indexStart, int indexEnd, ArrayList<Ball> population) {
+    public MultiThreadedCrossover(int indexStart, int indexEnd, ArrayList<Ball> population) {
         this.population = population;
         this.localNewPop = new ArrayList<Ball>();
         this.indexStart = indexStart;
