@@ -20,8 +20,13 @@ public class GeneticGolf {
         RunSingleThreaded();
         Logger.log("--------------------------------");
         RunMultiThreaded();
+        Logger.log("--------------------------------");
+        RunDistributed();
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static void RunSingleThreaded(){
         Random r = new Random(SEED);
@@ -80,7 +85,7 @@ public class GeneticGolf {
                 }
                 THREADPOOL.shutdownNow();
 
-                Logger.log("Threadpool shutdown success", LogLevel.Status);
+                Logger.log("Thread pool shutdown success", LogLevel.Status);
 
                 Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
                 return;
@@ -104,5 +109,11 @@ public class GeneticGolf {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }
+    }
+
+    private static void RunDistributed(){
+        long startTime = System.currentTimeMillis();
+        Logger.log("TEST", LogLevel.Warn);
+        Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
     }
 }//class
