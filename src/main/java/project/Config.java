@@ -36,7 +36,8 @@ public class Config {
     public static final int POSX_INIT_BOUND = 100;
 
     private static int OPTIMAL_REACHED = 0;
-    public static boolean GUI_TOGGLE = false;
+    public static boolean GUI_TOGGLE = true;
+    public static final int GUI_DRAW_STEPS = 1000;
 
     public static void optimalToggle(){
         OPTIMAL_REACHED = Math.abs(OPTIMAL_REACHED - 1);

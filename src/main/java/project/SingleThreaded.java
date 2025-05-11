@@ -62,7 +62,7 @@ public class SingleThreaded {
             newPop.addAll(newBestPop);
             population = newPop;
 
-            if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
+            if (GUI_TOGGLE && i % GUI_DRAW_STEPS == 0 && panel != null) {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }//genLoop

@@ -109,7 +109,7 @@ public class GeneticGolf {
                 throw new Exception("POPSIZE ISNT THE SAME" + population.size() + "!=" + POPSIZE);
             }
 
-            if (GUI_TOGGLE && i % 1000 == 0 && panel != null) {
+            if (GUI_TOGGLE && i % GUI_DRAW_STEPS == 0 && panel != null) {
 //                Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
                 panel.updateVisualization(population, newBestPop, i);
             }
