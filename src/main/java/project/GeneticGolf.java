@@ -46,7 +46,7 @@ public class GeneticGolf {
 
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness Multithreaded
-            multiGenetic(null, indexCut, THREADPOOL, population, null, GeneticFunction.Fitness);
+            multiGenetic(indexCut, THREADPOOL, population, null, GeneticFunction.Fitness,i );
             BARRIER.await(1, TimeUnit.MINUTES);
 
 
@@ -85,22 +85,22 @@ public class GeneticGolf {
                 return;
             }
 
-            //Crossover -> TODO: multithread w/ return
-            multiGenetic(r, indexCut, THREADPOOL, population, newPop, GeneticFunction.Crossover);
-//            Helper.Crossover(population, newPop, r);
+            //crossover -> TODO: multithread w/ return
+            multiGenetic(indexCut, THREADPOOL, population, newPop, GeneticFunction.Crossover,i);
+//            Helper.crossover(population, newPop, r);
 
 
             //Mutation -> TODO: multithread on newpop
-            for (Ball ball : newPop) {
-                double tempDouble = r.nextDouble();
-                if (tempDouble < MUTATION_RATE) {
-                    ball.mutate(tempDouble * 10, r);
-                }
-            }
+//            for (Ball ball : newPop) {
+//                double tempDouble = r.nextDouble();
+//                if (tempDouble < MUTATION_RATE) {
+//                    ball.mutate(tempDouble * 10, r);
+//                }
+//            }
 
             //Mutation multithread
-//            multiGenetic(r,indexCut, THREADPOOL, newPop, GeneticFunction.Mutation);
-//            BARRIER.await(10, TimeUnit.MINUTES);
+            multiGenetic(indexCut, THREADPOOL, population, newPop, GeneticFunction.Mutation, i);
+            BARRIER.await(2, TimeUnit.MINUTES);
 
             //Adding ELITE chromosome to population
             population = newPop;
@@ -116,11 +116,11 @@ public class GeneticGolf {
         }
     }
 
-    private static void multiGenetic(Random r, int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, ArrayList<Ball> newPop, GeneticFunction funcType) throws ExecutionException, InterruptedException {
+    private static void multiGenetic(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, ArrayList<Ball> newPop, GeneticFunction funcType, int generation) throws ExecutionException, InterruptedException {
         if (funcType == GeneticFunction.Crossover){
 
             ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
-
+    //Splitting the work to Threads
             for (int k = 0; k < THREADS; k++){
                 int indexStart = k* indexCut;
                 int indexEnd = (indexCut*k+indexCut != population.size()-BEST_POP_TO_GET && k == THREADS-1) ? population.size()-BEST_POP_TO_GET : k * indexCut + indexCut;
@@ -138,7 +138,7 @@ public class GeneticGolf {
             int indexEnd = (indexCut*j+indexCut != population.size() && j == THREADS-1) ? population.size() : j * indexCut + indexCut;
             switch (funcType){
                 case Mutation -> {
-                    THREADPOOL.submit(new MultiThreadedMutation(r, indexStart, indexEnd, population));
+                    THREADPOOL.submit(new MultiThreadedMutation(indexStart, indexEnd, population, generation));
                 }
                 case Fitness -> {
                     THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));

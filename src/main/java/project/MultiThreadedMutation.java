@@ -6,21 +6,20 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 
-import static project.Config.BARRIER;
-import static project.Config.MUTATION_RATE;
+import static project.Config.*;
 
 public class MultiThreadedMutation implements Runnable{
-    Random r;
     ArrayList<Ball> population;
-    int indexStart, indexEnd;
-    MultiThreadedMutation(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
-        this.r = r;
+    int indexStart, indexEnd, generation;
+    MultiThreadedMutation( int indexStart, int indexEnd, ArrayList<Ball> population, int generationCount){
         this.population = population;
         this.indexStart = indexStart;
         this.indexEnd = indexEnd;
+        this.generation = generationCount;
     }
     @Override
     public void run()  {
+        Random r = new Random(SEED + generation);
         for (int i = indexStart; i < indexEnd; i++) {
             Ball b = population.get(i);
             double tempDouble = r.nextDouble();
