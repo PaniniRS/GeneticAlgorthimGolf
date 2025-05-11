@@ -44,7 +44,7 @@ public class Helper {
         Logger.log("\n\n\n\n\nPOPULATION:");
     }
 
-    public static void Crossover(ArrayList<Ball> population, ArrayList<Ball> newPop) {
+    public static void crossover(ArrayList<Ball> population, ArrayList<Ball> newPop) {
         for (int i = 0; i < POPSIZE-BEST_POP_TO_GET; i++) {
             Random r = new Random(SEED + i);
             Ball b = population.get(i);
@@ -52,6 +52,16 @@ public class Helper {
                 newPop.add(b.crossover(Helper.selectRandom(population, r), r));
             }else{
                 newPop.add(b);
+            }
+        }
+    }
+    public static void mutate (ArrayList<Ball> newPop, int generation) {
+        Random r = new Random(SEED + generation);
+        for (int i = 0; i < newPop.size(); i++) {
+            Ball b = newPop.get(i);
+            double tempDouble = r.nextDouble();
+            if (tempDouble < MUTATION_RATE) {
+                b.mutate(tempDouble * 10, r);
             }
         }
     }
