@@ -24,6 +24,7 @@ public class Config {
     public static final double GRAVITY = 9.8;
     public static final double DRAG = 0.5;
     public static final double TICK = 0.006;
+    public static final double GRAVITY_DOWN_VECTOR = 0.5 * GRAVITY * (TICK*TICK);
 
     public static final int GUIWidth = 600;
     public static final int GUIHeight = 400;
