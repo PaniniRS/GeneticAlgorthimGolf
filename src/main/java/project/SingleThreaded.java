@@ -24,7 +24,7 @@ public class SingleThreaded {
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness
             for (Ball ball : population) {
-                ball.setFitness(ball.evaluateFitness(r));
+                ball.setFitness(ball.evaluateFitness());
             }
             //Selection
             //Sort the array based on fitness
@@ -39,7 +39,7 @@ public class SingleThreaded {
                     Logger.log("!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
 
                     //part below can be optimized I think, since code repeats with below check
-                    newBestPop.add(tempBall.copy()); //only needed if visualization is on if not we can skip it
+                    newBestPop.add(tempBall.copy());
                     Config.optimalToggle();
                     break;
                 }
@@ -66,10 +66,5 @@ public class SingleThreaded {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }//genLoop
-
-
     }
-
-
-
 }

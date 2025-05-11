@@ -47,7 +47,7 @@ public class GeneticGolf {
 
         for (int i = 0; i < GENERATIONS; i++) {
             //Fitness Multithreaded
-            multiGenetic(indexCut, THREADPOOL, population, null, GeneticFunction.Fitness,i );
+            multiGenetic(indexCut, THREADPOOL, population, null, GeneticFunction.Fitness, i);
             BARRIER.await(1, TimeUnit.MINUTES);
 
 
@@ -88,16 +88,6 @@ public class GeneticGolf {
 
             //crossover -> TODO: multithread w/ return
             multiGenetic(indexCut, THREADPOOL, population, newPop, GeneticFunction.Crossover,i);
-//            Helper.crossover(population, newPop, r);
-
-
-            //Mutation -> TODO: multithread on newpop
-//            for (Ball ball : newPop) {
-//                double tempDouble = r.nextDouble();
-//                if (tempDouble < MUTATION_RATE) {
-//                    ball.mutate(tempDouble * 10, r);
-//                }
-//            }
 
             //Mutation multithread
             multiGenetic(indexCut, THREADPOOL, population, newPop, GeneticFunction.Mutation, i);
@@ -111,11 +101,8 @@ public class GeneticGolf {
             }
 
             if (GUI_TOGGLE && i % GUI_DRAW_STEPS == 0 && panel != null) {
-//                Logger.log("GEN["+i+"] "+"Refreshing GUI", LogLevel.Status);
                 panel.updateVisualization(population, newBestPop, i);
             }
         }
     }
-
-
 }//class

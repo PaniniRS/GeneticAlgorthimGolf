@@ -71,7 +71,6 @@ public class Helper {
 
     public static void multiGenetic(int indexCut, ExecutorService THREADPOOL, ArrayList<Ball> population, ArrayList<Ball> newPop, GeneticFunction funcType, int generation) throws ExecutionException, InterruptedException {
         if (funcType == GeneticFunction.Crossover){
-
             ArrayList<MultiThreadedCrossover> tasks = new ArrayList<>(THREADS-1);
             //Splitting the work to Threads
             for (int k = 0; k < THREADS; k++){
@@ -94,7 +93,7 @@ public class Helper {
                         THREADPOOL.submit(new MultiThreadedMutation(indexStart, indexEnd, population, generation));
                     }
                     case Fitness -> {
-                        THREADPOOL.submit(new MultiThreadedFitness(new Random(SEED + j), indexStart, indexEnd, population));
+                        THREADPOOL.submit(new MultiThreadedFitness(indexStart, indexEnd, population));
                     }
                 }
             }

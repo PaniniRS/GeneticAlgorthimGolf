@@ -7,11 +7,9 @@ import java.util.concurrent.BrokenBarrierException;
 import static project.Config.*;
 
 public class MultiThreadedFitness implements Runnable{
-    Random r;
     ArrayList<Ball> population;
     int indexStart, indexEnd;
-    public MultiThreadedFitness(Random r, int indexStart, int indexEnd, ArrayList<Ball> population){
-        this.r = r;
+    public MultiThreadedFitness(int indexStart, int indexEnd, ArrayList<Ball> population){
         this.population = population;
         this.indexStart = indexStart;
         this.indexEnd = indexEnd;
@@ -21,7 +19,7 @@ public class MultiThreadedFitness implements Runnable{
         for (int i = indexStart; i < indexEnd; i++) {
             //Fitness
             Ball ball = population.get(i);
-            ball.setFitness(ball.evaluateFitness(r));
+            ball.setFitness(ball.evaluateFitness());
         }//indexLoop
         try {
             BARRIER.await();

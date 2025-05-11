@@ -24,7 +24,7 @@ public class Ball {
     }
 /////////////////////////////////////
     //RunFitness
-    public double evaluateFitness(Random r){
+    public double evaluateFitness(){
         while(!isStopped()){
                 updateBall();
             }
