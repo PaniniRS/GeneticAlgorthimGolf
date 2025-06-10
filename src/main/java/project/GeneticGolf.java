@@ -1,5 +1,6 @@
 package project;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.*;
 
@@ -7,19 +8,30 @@ import static project.Config.*;
 import static util.Helper.multiGenetic;
 
 import util.GeneticFunction;
+
 import util.Helper;
 import util.LogLevel;
 import util.Logger;
+import mpi.MPI;
 
 import javax.swing.*;
 
 public class GeneticGolf {
     public static void main(String[] args) throws Exception {
+
+        // Safely check args[0] before accessing
+        if (args.length > 0) {
+            Logger.log("Main arguments: " + args[0], LogLevel.Warn);
+        } else {
+            Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
+        }
         Logger.log("Running main");
-        RunSingleThreaded();
+//        RunSingleThreaded();
         Logger.log("--------------------------------");
         RunMultiThreaded();
         Logger.log("--------------------------------");
+
+        MPI.Init(args);
         RunDistributed();
     }
 
@@ -112,7 +124,14 @@ public class GeneticGolf {
 
     private static void RunDistributed(){
         long startTime = System.currentTimeMillis();
-        Logger.log("TEST", LogLevel.Warn);
+
+        int me = MPI.COMM_WORLD.Rank();
+        int nodes = MPI.COMM_WORLD.Size();
+
+        Logger.log("Hello from " + (me+1) + " out of " + nodes);
+
+        MPI.Finalize();
+
         Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
     }
 }//class
