@@ -122,14 +122,61 @@ public class GeneticGolf {
         }
     }
 
-    private static void RunDistributed(){
+    private static void RunDistributed() throws Exception {
         long startTime = System.currentTimeMillis();
-
+        final int ROOT = 0;
         int me = MPI.COMM_WORLD.Rank();
         int nodes = MPI.COMM_WORLD.Size();
+        Random r = new Random(SEED);
 
+        //Makes sure only one node sets the population, in our case it's always root
+        ArrayList<Ball> population = (me == ROOT) ? Helper.generatePopulation(r) : null;
+        if (population == null) {throw new Exception("POPULATION IS NULL (pop not set by root)")}
+
+        int indexCut = (int) Math.floor(population.size() / THREADS); //TODO: Check if it rounds the cuts
+        int indexStart = me * indexCut;
+        int indexEnd = (indexCut*me+indexCut != population.size()-BEST_POP_TO_GET && me == THREADS-1) ? population.size()-BEST_POP_TO_GET : me * indexCut + indexCut;
+
+//        ExecutorService THREADPOOL = Executors.newFixedThreadPool(THREADS);
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+        //GUI setup TODO: Maybe check if it works so that root can only call/access it
+        for (int i = 0; i < GENERATIONS; i++){
+        //Run Fitness
+        // Selection
+
+        //Sort array on fitness
+
+        //Extract elite pop
+        //Check local optimality
+        //Crossover
+        //Mutation
+        //Push elite pop to new pop
+        //Refresh GUI NOTE: Optional on distributed
+
+        }//§: end GenLoop
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
         Logger.log("Hello from " + (me+1) + " out of " + nodes);
 
+        GUI panel = GUI_TOGGLE ? new GUI() : null;
+        if (panel != null) {
+            SwingUtilities.invokeLater(() -> Helper.createAndShowGUI(panel));
+        }
+        Logger.log("GUI queued " + (me+1));
+
+
+        //Generations
+        for (int i = 0; i < GENERATIONS; i++) {
+
+        }
+
+
+
+
+
+        //CLose MPI protocol
         MPI.Finalize();
 
         Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
