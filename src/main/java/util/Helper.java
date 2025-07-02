@@ -28,6 +28,9 @@ public class Helper {
         frame.setVisible(true);
     }
 
+    /**
+     * Returns a populated ArrayList with random objects of the type Ball, takes random object to ensure deterministic result.
+    */
     public static ArrayList<Ball> generatePopulation(Random r){
         ArrayList<Ball> pop = new ArrayList<>();
         for (int i = 0; i < POPSIZE; i++) {
@@ -38,6 +41,7 @@ public class Helper {
         }
         return pop;
     }//GeneratePopulationMethod
+
 
     public static void printPopulation(ArrayList<Ball> pop){
         Logger.log("\n\n\n\n\nPOPULATION:");
