@@ -1,4 +1,5 @@
 package project;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -28,7 +29,7 @@ public class GeneticGolf {
         Logger.log("Running main");
 //        RunSingleThreaded();
         Logger.log("--------------------------------");
-        RunMultiThreaded();
+//        RunMultiThreaded();
         Logger.log("--------------------------------");
 
         MPI.Init(args);
@@ -113,7 +114,7 @@ public class GeneticGolf {
             population = newPop;
             population.addAll(newBestPop);
             if (population.size() != POPSIZE){
-                throw new Exception("POPSIZE ISNT THE SAME" + population.size() + "!=" + POPSIZE);
+                throw new Exception("POPSIZE ISN'T THE SAME" + population.size() + "!=" + POPSIZE);
             }
 
             if (GUI_TOGGLE && i % GUI_DRAW_STEPS == 0 && panel != null) {
@@ -127,12 +128,26 @@ public class GeneticGolf {
         final int ROOT = 0;
         int me = MPI.COMM_WORLD.Rank();
         int nodes = MPI.COMM_WORLD.Size();
+
+        ///
+        //TODO 21-6 - 20:29 : DO ARRAY BUFFERS FOR bcasting the population array
+        ///
         Random r = new Random(SEED);
 
         //Makes sure only one node sets the population, in our case it's always root
-        ArrayList<Ball> population = (me == ROOT) ? Helper.generatePopulation(r) : null;
-        if (population == null) {throw new Exception("POPULATION IS NULL (pop not set by root)")}
-
+        ArrayList<Ball> population = null;
+        Object[] populationArray = new Object[POPSIZE];
+        if (me == ROOT ) {
+            population = Helper.generatePopulation(r);
+            populationArray = population.toArray();
+        }
+        //BUG TODO: Cannot pass arraylist into Bcast so make func that converts population
+        MPI.COMM_WORLD.Bcast(populationArray, 0, POPSIZE, MPI.OBJECT, ROOT);
+        MPI.COMM_WORLD.Barrier();
+        Logger.log("Passed Barrier post pop init,");
+        //Check if root populated the population array
+        if (population == null) {throw new Exception("POPULATION IS NULL (pop not set by root)");}
+        if (me == ROOT) {Helper.printPopulation(population);};
         int indexCut = (int) Math.floor(population.size() / THREADS); //TODO: Check if it rounds the cuts
         int indexStart = me * indexCut;
         int indexEnd = (indexCut*me+indexCut != population.size()-BEST_POP_TO_GET && me == THREADS-1) ? population.size()-BEST_POP_TO_GET : me * indexCut + indexCut;
