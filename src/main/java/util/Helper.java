@@ -101,6 +101,18 @@ public class Helper {
         }
     }
 
+    /**
+     *Calculates the displacements and offsets within the function the splits the scatteringArray into chunk and sends it to the collectionArray
+     * @param nodeCounts
+     * @param nodeCountWorkSize
+     * @param remainderWorkSize
+     * @param nodeCountsSendCounts
+     * @param nodeCountsDisplacements
+     * @param collectionArray Where chunks will be stored
+     * @param scatteringArray That is split
+     * @param localNodeCountWorkSize
+     * @param ROOT
+     */
     public static void MPI_SCATTER_POPULATION (int nodeCounts, int nodeCountWorkSize, int remainderWorkSize, int[] nodeCountsSendCounts, int[] nodeCountsDisplacements, Object[] collectionArray, Object[] scatteringArray, int localNodeCountWorkSize, int ROOT){
         int offset = 0;
         for (int i = 0; i < nodeCounts; i++) {
