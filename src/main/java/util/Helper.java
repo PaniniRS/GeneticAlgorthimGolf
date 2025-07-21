@@ -1,5 +1,6 @@
 package util;
 
+import mpi.MPI;
 import project.*;
 
 import javax.swing.*;
@@ -98,6 +99,18 @@ public class Helper {
                 }
             }
         }
+    }
+
+    public static void MPI_SCATTER_POPULATION (int nodeCounts, int nodeCountWorkSize, int remainderWorkSize, int[] nodeCountsSendCounts, int[] nodeCountsDisplacements, Object[] collectionArray, Object[] scatteringArray, int localNodeCountWorkSize, int ROOT){
+        int offset = 0;
+        for (int i = 0; i < nodeCounts; i++) {
+            nodeCountsSendCounts[i] = nodeCountWorkSize + (i < remainderWorkSize ? 1 : 0);
+            nodeCountsDisplacements[i] = offset;
+            offset += nodeCountsSendCounts[i];
+        }
+
+        MPI.COMM_WORLD.Scatterv(scatteringArray, 0, nodeCountsSendCounts, nodeCountsDisplacements, MPI.OBJECT,
+                collectionArray, 0, localNodeCountWorkSize, MPI.OBJECT, ROOT);
     }
 
 

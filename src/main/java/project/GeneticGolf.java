@@ -153,15 +153,8 @@ public class GeneticGolf {
         int[] nodeCountsDisplacements = new int[nodeCounts];
 
         // Calculate send counts and nodeCountsDisplacements
-        int offset = 0;
-        for (int i = 0; i < nodeCounts; i++) {
-            nodeCountsSendCounts[i] = nodeCountWorkSize + (i < remainderWorkSize ? 1 : 0);
-            nodeCountsDisplacements[i] = offset;
-            offset += nodeCountsSendCounts[i];
-        }
+        Helper.MPI_SCATTER_POPULATION(nodeCounts, nodeCountWorkSize, remainderWorkSize, nodeCountsSendCounts, nodeCountsDisplacements, localPopArray, globalPopulationArray, localNodeCountWorkSize, ROOT);
 
-        MPI.COMM_WORLD.Scatterv(globalPopulationArray, 0, nodeCountsSendCounts, nodeCountsDisplacements, MPI.OBJECT,
-                localPopArray, 0, localNodeCountWorkSize, MPI.OBJECT, ROOT);
 
         // Convert to ArrayList
         for (Object obj : localPopArray) {
@@ -202,6 +195,8 @@ public class GeneticGolf {
               //Exists everywhere
                 ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
                 ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
+
+
         //Extract elite pop **ROOT ONLY**
             if (me == ROOT) {
                 if (globalPopulationArrayList == null) {
@@ -220,7 +215,6 @@ public class GeneticGolf {
                     newBestPop.add(tempBall.copy());
                 }
             }
-
         //Broadcast elite pop
         Object[] newBestPopArray = new Object[BEST_POP_TO_GET];
             if (me == ROOT) {
@@ -251,7 +245,10 @@ public class GeneticGolf {
                 MPI.COMM_WORLD.Barrier();
                 return;}
         //Crossover
-            //TODO: CHECK THIS make it use distributinn
+            //TODO: CHECK THIS make it use distribution
+            for (Ball ball : localPopulationArrayList){
+
+            }
 
         //Mutation
         //Push elite pop to new pop
