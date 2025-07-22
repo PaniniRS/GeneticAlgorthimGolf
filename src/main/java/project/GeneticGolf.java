@@ -5,7 +5,6 @@ import java.util.concurrent.*;
 
 import static project.Config.*;
 import static util.Helper.multiGenetic;
-import static util.Helper.printPopulation;
 
 import util.GeneticFunction;
 
@@ -153,14 +152,7 @@ public class GeneticGolf {
         int[] nodeCountsSendCounts = new int[nodeCounts];
         int[] nodeCountsDisplacements = new int[nodeCounts];
 
-        // Calculate send counts and nodeCountsDisplacements
-        Helper.MPI_SCATTER_POPULATION(nodeCounts, nodeCountWorkSize, remainderWorkSize, nodeCountsSendCounts, nodeCountsDisplacements, localPopArray, globalPopulationArray, localNodeCountWorkSize, ROOT);
 
-
-        // Convert to ArrayList
-        for (Object obj : localPopArray) {
-            localPopulationArrayList.add((Ball) obj);
-        }
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -177,6 +169,12 @@ public class GeneticGolf {
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
         for (int i = 0; i < GENERATIONS; i++){
+
+        // Calculate send counts and nodeCountsDisplacements
+        Helper.MPI_SCATTER_POPULATION(nodeCounts, nodeCountWorkSize, remainderWorkSize, nodeCountsSendCounts, nodeCountsDisplacements, localPopArray, globalPopulationArray, localNodeCountWorkSize, ROOT);
+        // Convert to ArrayList
+            ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
+
         //Run Fitness (All)
             for (Ball ball : localPopulationArrayList) {
                 ball.setFitness(ball.evaluateFitness());
@@ -185,30 +183,23 @@ public class GeneticGolf {
             //TODO: Check if properly sent args
             MPI.COMM_WORLD.Gatherv(localPopulationArrayList.toArray(), 0, localNodeCountWorkSize, MPI.OBJECT, globalPopulationArray, 0,nodeCountsSendCounts, nodeCountsDisplacements, MPI.OBJECT, ROOT);
 
+            //Exists everywhere
+            ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
+            ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
+
+
             //Convert the array with calculated fitness to arraylist
             if (me == ROOT) {
-                globalPopulationArrayList.clear();
-                for (Object ballObj : globalPopulationArray) {
-                    globalPopulationArrayList.add((Ball) ballObj);
-                }
-
+                ConvertArrayToArrayList(globalPopulationArrayList, globalPopulationArray);
         // Selection (Root)
                 //Sort array on fitness
                 globalPopulationArrayList.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness())
                 );
-            }
-              //Exists everywhere
-                ArrayList<Ball> newPop = new ArrayList<>(POPSIZE-BEST_POP_TO_GET);
-                ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
-
 
         //Extract elite pop **ROOT ONLY**
-            if (me == ROOT) {
-                if (globalPopulationArrayList == null) {
-                    throw new Exception("ELITE SELECTION -> globalpoparray null");
-                }
                 for (int j = 0; j < Math.min(BEST_POP_TO_GET, globalPopulationArrayList.size()); j++) {
                     Ball tempBall = globalPopulationArrayList.get(j);
+                    globalPopulationArrayList.remove(j);
                     if (tempBall.getFitness() >= 0.95) {
                         Logger.log("GEN[" + i + "] " + "!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of " + j + " th best: " + tempBall.getFitness(), LogLevel.Success);
 
@@ -219,6 +210,9 @@ public class GeneticGolf {
                     }
                     newBestPop.add(tempBall.copy());
                 }
+
+            //Remove extracted elite pop
+                if (me == ROOT && i % 100 == 0) {Logger.log("Size of global array: " + globalPopulationArrayList.size());}
             }
         //Broadcast elite pop
         Object[] newBestPopArray = new Object[BEST_POP_TO_GET];
@@ -228,7 +222,7 @@ public class GeneticGolf {
             MPI.COMM_WORLD.Bcast(newBestPopArray, 0, BEST_POP_TO_GET, MPI.OBJECT, ROOT);
         // Makes sure the non root nodes get the new best pop
             if (me != ROOT) {
-                UpdatePopulation(newBestPop, newBestPopArray);
+                ConvertArrayToArrayList(newBestPop, newBestPopArray);
             }
 
 
@@ -253,7 +247,7 @@ public class GeneticGolf {
             Random re = new Random(SEED + me * GENERATIONS + i); // More deterministic seed
 
             // Update local population
-            UpdatePopulation(localPopulationArrayList, localPopArray);
+            ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
 
             for (Ball ball : localPopulationArrayList) {
                 if (re.nextDouble() < CROSSOVER_RATE && localPopulationArrayList.size() > 1) {
@@ -277,14 +271,6 @@ public class GeneticGolf {
 
 
             if (me == ROOT) {
-                globalPopulationArrayList.clear();
-                // Add working population
-                for (Object obj : globalPopulationArray) {
-                    if (obj != null) {
-                        globalPopulationArrayList.add((Ball) obj);
-                    }
-                }
-
                 // Add elite population
                 globalPopulationArrayList.addAll(newBestPop);
 
@@ -313,11 +299,11 @@ public class GeneticGolf {
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////xsx
 /////////////////////////////////////////////////////////////////////////////
-    private static void UpdatePopulation(ArrayList<Ball> localPopulationArrayList, Object[] localPopArray) {
-        localPopulationArrayList.clear();
-        for (Object obj : localPopArray) {
+    private static void ConvertArrayToArrayList(ArrayList<Ball> ArrList, Object[] Arr) {
+        ArrList.clear();
+        for (Object obj : Arr) {
             if (obj != null) {
-                localPopulationArrayList.add((Ball) obj);
+                ArrList.add((Ball) obj);
             }
         }
     }
