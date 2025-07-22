@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 
 import static project.Config.*;
 import static util.Helper.multiGenetic;
+import static util.Helper.printPopulation;
 
 import util.GeneticFunction;
 
@@ -170,7 +171,11 @@ public class GeneticGolf {
             SwingUtilities.invokeLater(() -> Helper.createAndShowGUI(panel));
         } // !!! ROOT CODE BLOCK !!!
 
-
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+////////////////////////GEN LOOP/////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
         for (int i = 0; i < GENERATIONS; i++){
         //Run Fitness (All)
             for (Ball ball : localPopulationArrayList) {
@@ -223,12 +228,7 @@ public class GeneticGolf {
             MPI.COMM_WORLD.Bcast(newBestPopArray, 0, BEST_POP_TO_GET, MPI.OBJECT, ROOT);
         // Makes sure the non root nodes get the new best pop
             if (me != ROOT) {
-                newBestPop.clear();
-                for (Object obj : newBestPopArray) {
-                    if (obj != null) {
-                        newBestPop.add((Ball) obj);
-                    }
-                }
+                UpdatePopulation(newBestPop, newBestPopArray);
             }
 
 
@@ -244,25 +244,81 @@ public class GeneticGolf {
                 }
                 MPI.COMM_WORLD.Barrier();
                 return;}
-        //Crossover
-            //TODO: CHECK THIS make it use distribution
-            for (Ball ball : localPopulationArrayList){
 
+            //Prep Array Chunks
+            Helper.MPI_SCATTER_POPULATION(nodeCounts, nodeCountWorkSize, remainderWorkSize, nodeCountsSendCounts, nodeCountsDisplacements, localPopArray, globalPopulationArray, localNodeCountWorkSize, ROOT);
+
+            //Crossover
+            ArrayList<Ball> newLocalPopArrList = new ArrayList<>();
+            Random re = new Random(SEED + me * GENERATIONS + i); // More deterministic seed
+
+            // Update local population
+            UpdatePopulation(localPopulationArrayList, localPopArray);
+
+            for (Ball ball : localPopulationArrayList) {
+                if (re.nextDouble() < CROSSOVER_RATE && localPopulationArrayList.size() > 1) {
+                    Ball partner = Helper.selectRandom(localPopulationArrayList, re);
+                    newLocalPopArrList.add(ball.crossover(partner, re));
+                } else {
+                    newLocalPopArrList.add(ball.copy());
+                }
             }
-
         //Mutation
-        //Push elite pop to new pop
-        //Refresh GUI NOTE: Optional on distribute
-            if (globalPopulationArray != null && panel != null && me == ROOT && GUI_TOGGLE && i % GUI_DRAW_STEPS == 0) {
-                panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
+            for (Ball ball : newLocalPopArrList) {
+                if (re.nextDouble() < MUTATION_RATE) {
+                    ball.mutate(re.nextDouble(), re);
+                }
             }
-            //Scatter new data
 
+            // Gather mutated population
+            MPI.COMM_WORLD.Gatherv(newLocalPopArrList.toArray(), 0, localNodeCountWorkSize,
+                    MPI.OBJECT, globalPopulationArray, 0, nodeCountsSendCounts,
+                    nodeCountsDisplacements, MPI.OBJECT, ROOT);
+
+
+            if (me == ROOT) {
+                globalPopulationArrayList.clear();
+                // Add working population
+                for (Object obj : globalPopulationArray) {
+                    if (obj != null) {
+                        globalPopulationArrayList.add((Ball) obj);
+                    }
+                }
+
+                // Add elite population
+                globalPopulationArrayList.addAll(newBestPop);
+
+                // Verify population size
+                if (globalPopulationArrayList.size() != POPSIZE) {
+                    Logger.log("WARNING: Population size mismatch: " + globalPopulationArrayList.size() + " != " + POPSIZE, LogLevel.Warn);
+                }
+
+                // Update GUI
+                if (panel != null && GUI_TOGGLE && i % GUI_DRAW_STEPS == 0) {
+                    panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
+                }
+
+                if (i % 100 == 0) { // Reduced logging frequency
+                    Logger.log("Gen " + i + " | Best fitness: " +
+                            (globalPopulationArrayList.isEmpty() ? "N/A" : globalPopulationArrayList.get(0).getFitness()), LogLevel.Info);
+                }
+            }
         }//=-=-=-=-=-=-=-=§: end GenLoop
 
         //CLose MPI protocol
 
         MPI.COMM_WORLD.Barrier();
         MPI.Finalize();
+    }
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////xsx
+/////////////////////////////////////////////////////////////////////////////
+    private static void UpdatePopulation(ArrayList<Ball> localPopulationArrayList, Object[] localPopArray) {
+        localPopulationArrayList.clear();
+        for (Object obj : localPopArray) {
+            if (obj != null) {
+                localPopulationArrayList.add((Ball) obj);
+            }
+        }
     }
 }//class
