@@ -51,6 +51,26 @@ public class Helper {
         }
         Logger.log("\n\n\n\n\nPOPULATION:");
     }
+    public static void printPopulation(ArrayList<Ball> pop, int numberOfEleToPrint) throws Exception {
+        Logger.log("\n\n\n\n\nPOPULATION:");
+
+        if (numberOfEleToPrint > pop.size()) {
+            Logger.log("number of elements in array printing cannot be more than population size", LogLevel.Warn);
+            numberOfEleToPrint = pop.size();
+        }
+        //Print from behind if negative
+        if (numberOfEleToPrint < 0 ){
+            int start = Math.max(pop.size() + numberOfEleToPrint, 0);
+            for (int i = start; i < pop.size(); i++) {
+                Logger.log("\t ("+i+")" + pop.get(i).getFitness(), LogLevel.Status);
+            }
+        }else {
+        for (int i = 0; i < numberOfEleToPrint; i++) {
+            Logger.log("\t ("+i+")" + pop.get(i).getFitness(), LogLevel.Status);
+        }
+        }
+        Logger.log("\n\n\n\n\nPOPULATION:");
+    }
 
     public static void crossover(ArrayList<Ball> population, ArrayList<Ball> newPop) {
         for (int i = 0; i < POPSIZE-BEST_POP_TO_GET; i++) {
