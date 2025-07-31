@@ -24,12 +24,15 @@ public class GeneticGolf {
         } else {
             Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
         }
-//        Logger.log("Running main");
-//        RunSingleThreaded();
-//        Logger.log("--------------------------------");
-//        RunMultiThreaded();
-        Logger.log("--------------------------------");
         MPI.Init(args);
+        if (MPI.COMM_WORLD.Rank() == 0) {
+        Logger.log("Running main");
+        Logger.log("----------------ST-----------------", LogLevel.Debug);
+        RunSingleThreaded();
+        Logger.log("----------------MT-----------------",LogLevel.Debug);
+        RunMultiThreaded();
+        }
+        Logger.log("----------------DT-----------------",LogLevel.Debug);
         RunDistributed();
     }
 
@@ -75,8 +78,6 @@ public class GeneticGolf {
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
                 if(tempBall.getFitness() >= 0.95) {
-                    Logger.log("GEN["+i+"] "+"!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
-
                     //part below can be optimized I think, since code repeats with below check
                     newBestPop.add(tempBall.copy()); //only needed if visualization is on if not we can skip it
                     optimalToggle();
@@ -87,6 +88,7 @@ public class GeneticGolf {
 
             if(getOptimalReached() == 1) {
                 Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
                 if(GUI_TOGGLE) {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
@@ -120,6 +122,7 @@ public class GeneticGolf {
     }
 
     private static void RunDistributed() throws Exception {
+        while (getOptimalReached() == 1){optimalToggle();}
         long startTime = System.currentTimeMillis();
         final int ROOT = 0;
         int me = MPI.COMM_WORLD.Rank();
@@ -180,7 +183,6 @@ public class GeneticGolf {
 
                     //If optimal ball is found
                     if (tempBall.getFitness() >= 0.95) {
-                        Logger.log("GEN[" + i + "] " + "!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of " + j + " th best: " + tempBall.getFitness(), LogLevel.Success);
                         //only needed if visualization is on if not we can skip it
                         newBestPop.add(tempBall.copy());
                         optimalToggle();
@@ -193,6 +195,7 @@ public class GeneticGolf {
                 //Check local optimality
                 if(getOptimalReached() == 1) {
                     Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                    Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
                     if(GUI_TOGGLE&& panel != null) {
 
                         //Visualizing the whole population on complete

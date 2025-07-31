@@ -36,8 +36,6 @@ public class SingleThreaded {
             for (int j = 0; j < Math.min(BEST_POP_TO_GET, population.size()); j++) {
                 Ball tempBall = population.get(j);
                 if(tempBall.getFitness() >= 0.95) {
-                    Logger.log("!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of "  + j +" th best: " + tempBall.getFitness(), LogLevel.Success);
-
                     //part below can be optimized I think, since code repeats with below check
                     newBestPop.add(tempBall.copy());
                     Config.optimalToggle();
@@ -48,6 +46,7 @@ public class SingleThreaded {
 
             if(getOptimalReached() == 1) {
                 Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
                 if(GUI_TOGGLE) {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
