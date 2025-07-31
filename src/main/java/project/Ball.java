@@ -1,9 +1,10 @@
 package project;
+import java.io.Serializable;
 import java.util.Random;
 
 import static project.Config.*;
 
-public class Ball {
+public class Ball implements Serializable {
     public double posX, posY, velocity, angle, fitness;
 
     public Ball(double posX, double posY, double velocity, double angle) {

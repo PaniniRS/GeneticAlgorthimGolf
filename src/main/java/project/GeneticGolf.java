@@ -4,22 +4,32 @@ import java.util.Random;
 import java.util.concurrent.*;
 
 import static project.Config.*;
-import static util.Helper.multiGenetic;
+import static util.Helper.*;
 
 import util.GeneticFunction;
+
 import util.Helper;
 import util.LogLevel;
 import util.Logger;
+import mpi.MPI;
 
 import javax.swing.*;
 
 public class GeneticGolf {
     public static void main(String[] args) throws Exception {
-        Logger.log("Running main");
-        RunSingleThreaded();
+
+        // Safely check args[0] before accessing
+        if (args.length > 0) {
+            Logger.log("Main arguments: " + args[0], LogLevel.Warn);
+        } else {
+            Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
+        }
+//        Logger.log("Running main");
+//        RunSingleThreaded();
+//        Logger.log("--------------------------------");
+//        RunMultiThreaded();
         Logger.log("--------------------------------");
-        RunMultiThreaded();
-        Logger.log("--------------------------------");
+        MPI.Init(args);
         RunDistributed();
     }
 
@@ -41,7 +51,7 @@ public class GeneticGolf {
         Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = Helper.generatePopulation(r);
-        int indexCut = (int) Math.floor(population.size() / THREADS); //TODO: Check if it rounds the cuts
+        int indexCut = (int) Math.floor((double) population.size() / THREADS); //TODO: Check if it rounds the cuts
         ExecutorService THREADPOOL = Executors.newFixedThreadPool(THREADS);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
@@ -53,7 +63,6 @@ public class GeneticGolf {
             //Fitness Multithreaded
             multiGenetic(indexCut, THREADPOOL, population, null, GeneticFunction.Fitness, i);
             BARRIER.await(1, TimeUnit.MINUTES);
-
 
             //Selection
             //Sort the array based on fitness
@@ -101,7 +110,7 @@ public class GeneticGolf {
             population = newPop;
             population.addAll(newBestPop);
             if (population.size() != POPSIZE){
-                throw new Exception("POPSIZE ISNT THE SAME" + population.size() + "!=" + POPSIZE);
+                throw new Exception("POPSIZE ISN'T THE SAME" + population.size() + "!=" + POPSIZE);
             }
 
             if (GUI_TOGGLE && i % GUI_DRAW_STEPS == 0 && panel != null) {
@@ -110,9 +119,178 @@ public class GeneticGolf {
         }
     }
 
-    private static void RunDistributed(){
+    private static void RunDistributed() throws Exception {
         long startTime = System.currentTimeMillis();
-        Logger.log("TEST", LogLevel.Warn);
-        Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
+        final int ROOT = 0;
+        int me = MPI.COMM_WORLD.Rank();
+        int nodeCounts = MPI.COMM_WORLD.Size();
+        Random r = new Random(SEED);
+
+        Object[] globalPopulationArray = new Object[POPSIZE];
+        ArrayList<Ball> globalPopulationArrayList = null;
+
+        int localNodeCountWorkSize = POPSIZE/nodeCounts + (me < (POPSIZE%nodeCounts) ? 1 : 0);
+        Object[] localPopArray = new Object[localNodeCountWorkSize];
+        ArrayList<Ball> localPopulationArrayList = new ArrayList<>(localNodeCountWorkSize);
+
+        //Root initializes global population
+        if (me == ROOT) {
+            globalPopulationArrayList = Helper.generatePopulation(r); // Same seed as sequential
+            globalPopulationArray = globalPopulationArrayList.toArray();
+        }//!!! Root code block !!!
+
+
+        //GUI setup (Only Root)
+        GUI panel = (GUI_TOGGLE && me==ROOT) ? new GUI() : null;
+        if (me == ROOT && panel != null) {
+            SwingUtilities.invokeLater(() -> Helper.createAndShowGUI(panel));
+        } // !!! ROOT CODE BLOCK !!!
+
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+////////////////////////GEN LOOP/////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+        for (int i = 0; i < GENERATIONS; i++){
+            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE, globalPopulationArray, localPopArray, ROOT);
+
+            // Convert to ArrayList
+            ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
+
+            //Run Fitness (All nodes)
+            for (Ball ball : localPopulationArrayList) {
+                ball.setFitness(ball.evaluateFitness());
+            }
+
+            //Getting back the calculated fitness results
+            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE, localPopulationArrayList.toArray(), globalPopulationArray, ROOT);
+
+
+
+            //Exists everywhere for elite selection
+            ArrayList<Ball> newBestPop = new ArrayList<>(BEST_POP_TO_GET);
+
+            if (me == ROOT) {
+            //Converting the full population array so we can extract elites
+                ConvertArrayToArrayList(globalPopulationArrayList, globalPopulationArray);
+                globalPopulationArrayList.sort((a, b) -> Double.compare(b.getFitness(), a.getFitness()));
+        //Extract elite pop **ROOT ONLY**
+                for (int j = 0; j < Math.min(BEST_POP_TO_GET, globalPopulationArrayList.size()); j++) {
+                    Ball tempBall = globalPopulationArrayList.get(j);
+
+                    //If optimal ball is found
+                    if (tempBall.getFitness() >= 0.95) {
+                        Logger.log("GEN[" + i + "] " + "!!!! Reached optimal after " + i + " generations !!!! \n Final fitness of " + j + " th best: " + tempBall.getFitness(), LogLevel.Success);
+                        //only needed if visualization is on if not we can skip it
+                        newBestPop.add(tempBall.copy());
+                        optimalToggle();
+                        break;
+                    }
+                    //If it's not optimal just add the ball to the array
+                    newBestPop.add(tempBall.copy());
+                }
+
+                //Check local optimality
+                if(getOptimalReached() == 1) {
+                    Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                    if(GUI_TOGGLE&& panel != null) {
+
+                        //Visualizing the whole population on complete
+                        panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
+                    }
+                        Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
+                    MPI.COMM_WORLD.Barrier();
+                    MPI.Finalize();
+                    return;}
+                // Update globalPopulationArrayList to be the working population only
+                globalPopulationArray = globalPopulationArrayList.toArray();
+            }
+
+            MPI.COMM_WORLD.Bcast(globalPopulationArray,0,POPSIZE, MPI.OBJECT, ROOT);
+
+            //Scatter for distributed crossover
+            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE-BEST_POP_TO_GET, globalPopulationArray, localPopArray, ROOT);
+
+            //Update local population after scatter
+            ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
+
+            //////////////////////////////////////////////////
+            //////////////////////////////////////////////////
+            //Crossover
+            ArrayList<Ball> modifiedLocalPopArrList = new ArrayList<>();
+
+            for (int iC = 0; iC < localPopulationArrayList.size(); iC++) {
+                Ball ball = localPopulationArrayList.get(iC);
+                int SEED_CROSSOVER = SEED + (iC + localNodeCountWorkSize * me); //mimic multithreaded seeding
+
+                Random rC = new Random(SEED_CROSSOVER);
+                if (rC.nextDouble() < CROSSOVER_RATE && localPopulationArrayList.size() > 1) {
+                    Ball partner = Helper.selectRandom(localPopulationArrayList, rC);
+                    modifiedLocalPopArrList.add(ball.crossover(partner, rC));
+                } else {
+                    modifiedLocalPopArrList.add(ball.copy());
+                }
+            }
+
+        //Mutations
+                Helper.mutate(modifiedLocalPopArrList, i);
+
+// Gather modified population (only ROOT needs the destination array)
+            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE-BEST_POP_TO_GET, modifiedLocalPopArrList.toArray(), globalPopulationArray, ROOT);
+
+
+            if (me == ROOT) {
+                //Convert the array into an array list for manipulation
+                ConvertArrayToArrayList(globalPopulationArrayList, globalPopulationArray);
+
+                // Add elite population
+                for (int j = 0; j < BEST_POP_TO_GET; j++) {
+                globalPopulationArrayList.remove(globalPopulationArrayList.size() - 1);
+                }
+                globalPopulationArrayList.addAll(newBestPop);
+
+
+                //Size verification
+                if (globalPopulationArrayList.size() != POPSIZE) {
+                    throw new Exception("Population size mismatch: " + globalPopulationArrayList.size() + " != " + POPSIZE);
+                }
+
+                //Set up GlobalPopArray for the next iteration
+                globalPopulationArray = globalPopulationArrayList.toArray();
+
+                // Update GUI
+                if (panel != null && GUI_TOGGLE && i % GUI_DRAW_STEPS == 0) {
+                    panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
+                }
+
+//                // Reduced logging frequency [REMOVE ON FINAL]
+//                if (i % 100 == 0) {
+//                    Logger.log("Gen " + i + " | Best fitness: " +
+//                            (globalPopulationArrayList.isEmpty() ? "N/A" : globalPopulationArrayList.get(0).getFitness() + "Population size: " + globalPopulationArrayList.size()), LogLevel.Status);
+//                }
+
+            }
+        }//=-=-=-=-=-=-=-=§: end GenLoop
+
+        //CLose MPI protocol
+        MPI.COMM_WORLD.Barrier();
+        MPI.Finalize();
+    }
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////xsx
+/////////////////////////////////////////////////////////////////////////////
+    /**
+    Clears array list if it's not null, otherwise it transfers the elements from the array into the array list by .add
+     */
+    private static void ConvertArrayToArrayList(ArrayList<Ball> ArrList, Object[] Arr) {
+        if (ArrList != null)ArrList.clear();
+        for (Object obj : Arr) {
+            if (obj != null) {
+                assert ArrList != null;
+                ArrList.add((Ball) obj);
+            }else{
+                    throw new IllegalStateException("Null element during population conversion. Check MPI Scatterv source.");
+            }
+        }
     }
 }//class

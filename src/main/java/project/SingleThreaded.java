@@ -47,6 +47,7 @@ public class SingleThreaded {
             }
 
             if(getOptimalReached() == 1) {
+                Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
                 if(GUI_TOGGLE) {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
