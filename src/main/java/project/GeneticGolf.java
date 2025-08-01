@@ -346,7 +346,7 @@ public class GeneticGolf {
             for (ConfigSettings config : testConfigs) {
                 config.apply();
                 multiTime = benchmark(Target.Multi, 3);
-                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Multi,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiTime, multiTime / 1000));
+                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Multi,%d ms, %d s\n", id, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiTime, multiTime / 1000));
                 bw.flush();
                 id++;
             }//loopcfg
