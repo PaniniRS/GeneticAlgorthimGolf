@@ -1,65 +1,85 @@
 package project;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.*;
 
 import static project.Config.*;
 import static util.Helper.*;
 
-import util.GeneticFunction;
+import util.*;
 
-import util.Helper;
-import util.LogLevel;
-import util.Logger;
 import mpi.MPI;
 
 import javax.swing.*;
 
 public class GeneticGolf {
+
+    private enum Target {
+        Single, Multi, Distributed
+    }
+
+
     public static void main(String[] args) throws Exception {
 
         // Safely check args[0] before accessing
         if (args.length > 0) {
-            Logger.log("Main arguments: " + args[0], LogLevel.Warn);
+            //Logger.log("Main arguments: " + args[0], LogLevel.Warn);
         } else {
-            Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
+            //Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
         }
-        MPI.Init(args);
-        if (MPI.COMM_WORLD.Rank() == 0) {
-        Logger.log("Running main");
-        Logger.log("----------------ST-----------------", LogLevel.Debug);
-        RunSingleThreaded();
-        Logger.log("----------------MT-----------------",LogLevel.Debug);
-        RunMultiThreaded();
-        }
-        Logger.log("----------------DT-----------------",LogLevel.Debug);
-        RunDistributed();
+
+//        MPI.Init(args);
+        List<ConfigSettings> testConfigs = new ArrayList<>();
+        int[] generations = {5000, 10000, 20000};
+        double[] holePositions = {300_000.0, 500_000.0, 1_000_000.0};
+        int[] popSizes = {1000, 2000};
+        int[] bestSizes = {4, 8};
+        double[] mutationRates = {0.1, 0.3, 0.6};
+        double[] crossoverRates = {0.2, 0.6};
+
+        //Filling testing array
+        for (int g : generations)
+            for (double h : holePositions)
+                for (int p : popSizes)
+                    for (int b : bestSizes)
+                        for (double m : mutationRates)
+                            for (double c : crossoverRates)
+                                testConfigs.add(new ConfigSettings(g, h, p, b, m, c));
+
+        testSingle(testConfigs);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static void RunSingleThreaded(){
+    private static long RunSingleThreaded(){
         Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
 
         new SingleThreaded(r).run();
         optimalToggle();
 
-        Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
+//        //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
+        return System.currentTimeMillis() - startTime;
     }
 
-    private static void RunMultiThreaded() throws Exception {
+    private static long RunMultiThreaded() throws Exception {
         Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
-        ArrayList<Ball> population = Helper.generatePopulation(r);
+        ArrayList<Ball> population = generatePopulation(r);
         int indexCut = (int) Math.floor((double) population.size() / THREADS); //TODO: Check if it rounds the cuts
         ExecutorService THREADPOOL = Executors.newFixedThreadPool(THREADS);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
         if (panel != null) {
-            SwingUtilities.invokeLater(() -> Helper.createAndShowGUI(panel));
+            SwingUtilities.invokeLater(() -> createAndShowGUI(panel));
         }
 
         for (int i = 0; i < GENERATIONS; i++) {
@@ -87,18 +107,18 @@ public class GeneticGolf {
             }
 
             if(getOptimalReached() == 1) {
-                Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
-                Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
+                //Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                //Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
                 if(GUI_TOGGLE) {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
                 }
                 THREADPOOL.shutdownNow();
 
-                Logger.log("Thread pool shutdown success", LogLevel.Status);
+                //Logger.log("Thread pool shutdown success", LogLevel.Status);
 
-                Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
-                return;
+                //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
+                return System.currentTimeMillis() - startTime;
             }
 
             //crossover -> TODO: multithread w/ return
@@ -119,9 +139,10 @@ public class GeneticGolf {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }
+        return System.currentTimeMillis() - startTime;
     }
 
-    private static void RunDistributed() throws Exception {
+    private static long RunDistributed() throws Exception {
         while (getOptimalReached() == 1){optimalToggle();}
         long startTime = System.currentTimeMillis();
         final int ROOT = 0;
@@ -138,7 +159,7 @@ public class GeneticGolf {
 
         //Root initializes global population
         if (me == ROOT) {
-            globalPopulationArrayList = Helper.generatePopulation(r); // Same seed as sequential
+            globalPopulationArrayList = generatePopulation(r); // Same seed as sequential
             globalPopulationArray = globalPopulationArrayList.toArray();
         }//!!! Root code block !!!
 
@@ -146,7 +167,7 @@ public class GeneticGolf {
         //GUI setup (Only Root)
         GUI panel = (GUI_TOGGLE && me==ROOT) ? new GUI() : null;
         if (me == ROOT && panel != null) {
-            SwingUtilities.invokeLater(() -> Helper.createAndShowGUI(panel));
+            SwingUtilities.invokeLater(() -> createAndShowGUI(panel));
         } // !!! ROOT CODE BLOCK !!!
 
 /////////////////////////////////////////////////////////////////
@@ -155,7 +176,7 @@ public class GeneticGolf {
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
         for (int i = 0; i < GENERATIONS; i++){
-            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE, globalPopulationArray, localPopArray, ROOT);
+            MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE, globalPopulationArray, localPopArray, ROOT);
 
             // Convert to ArrayList
             ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
@@ -166,7 +187,7 @@ public class GeneticGolf {
             }
 
             //Getting back the calculated fitness results
-            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE, localPopulationArrayList.toArray(), globalPopulationArray, ROOT);
+            MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE, localPopulationArrayList.toArray(), globalPopulationArray, ROOT);
 
 
 
@@ -194,17 +215,17 @@ public class GeneticGolf {
 
                 //Check local optimality
                 if(getOptimalReached() == 1) {
-                    Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
-                    Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
+                    //Logger.log("GEN["+i+"] "+"Optimal reached", LogLevel.Status);
+                    //Logger.log("\tBest fitness: " + newBestPop.get(0).getFitness(), LogLevel.Status);
                     if(GUI_TOGGLE&& panel != null) {
 
                         //Visualizing the whole population on complete
                         panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
                     }
-                        Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
+                        //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
                     MPI.COMM_WORLD.Barrier();
-                    MPI.Finalize();
-                    return;}
+//                    MPI.Finalize();
+                    return System.currentTimeMillis() - startTime;}
                 // Update globalPopulationArrayList to be the working population only
                 globalPopulationArray = globalPopulationArrayList.toArray();
             }
@@ -212,7 +233,7 @@ public class GeneticGolf {
             MPI.COMM_WORLD.Bcast(globalPopulationArray,0,POPSIZE, MPI.OBJECT, ROOT);
 
             //Scatter for distributed crossover
-            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE-BEST_POP_TO_GET, globalPopulationArray, localPopArray, ROOT);
+            MPI_POPULATION_GENERIC(MPIOPERATION.SCATTER, POPSIZE-BEST_POP_TO_GET, globalPopulationArray, localPopArray, ROOT);
 
             //Update local population after scatter
             ConvertArrayToArrayList(localPopulationArrayList, localPopArray);
@@ -228,7 +249,7 @@ public class GeneticGolf {
 
                 Random rC = new Random(SEED_CROSSOVER);
                 if (rC.nextDouble() < CROSSOVER_RATE && localPopulationArrayList.size() > 1) {
-                    Ball partner = Helper.selectRandom(localPopulationArrayList, rC);
+                    Ball partner = selectRandom(localPopulationArrayList, rC);
                     modifiedLocalPopArrList.add(ball.crossover(partner, rC));
                 } else {
                     modifiedLocalPopArrList.add(ball.copy());
@@ -236,10 +257,10 @@ public class GeneticGolf {
             }
 
         //Mutations
-                Helper.mutate(modifiedLocalPopArrList, i);
+                mutate(modifiedLocalPopArrList, i);
 
 // Gather modified population (only ROOT needs the destination array)
-            Helper.MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE-BEST_POP_TO_GET, modifiedLocalPopArrList.toArray(), globalPopulationArray, ROOT);
+            MPI_POPULATION_GENERIC(MPIOPERATION.GATHER, POPSIZE-BEST_POP_TO_GET, modifiedLocalPopArrList.toArray(), globalPopulationArray, ROOT);
 
 
             if (me == ROOT) {
@@ -266,18 +287,13 @@ public class GeneticGolf {
                     panel.updateVisualization(globalPopulationArrayList, newBestPop, i);
                 }
 
-//                // Reduced logging frequency [REMOVE ON FINAL]
-//                if (i % 100 == 0) {
-//                    Logger.log("Gen " + i + " | Best fitness: " +
-//                            (globalPopulationArrayList.isEmpty() ? "N/A" : globalPopulationArrayList.get(0).getFitness() + "Population size: " + globalPopulationArrayList.size()), LogLevel.Status);
-//                }
-
             }
         }//=-=-=-=-=-=-=-=§: end GenLoop
 
         //CLose MPI protocol
         MPI.COMM_WORLD.Barrier();
-        MPI.Finalize();
+//        MPI.Finalize();
+        return System.currentTimeMillis() - startTime;
     }
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////xsx
@@ -296,4 +312,94 @@ public class GeneticGolf {
             }
         }
     }
+
+    public static long benchmark(Target target, int timesToRun) throws Exception {
+        long totalTime = 0;
+        System.out.print("Running " + target + " " + timesToRun + "x:\t");
+        for (int i = 0; i < timesToRun; i++) {
+            switch (target) {
+                case Single -> totalTime += RunSingleThreaded();
+                case Multi -> totalTime += RunMultiThreaded();
+                case Distributed -> totalTime += RunDistributed();
+            }
+            if (i % 5 == 0) System.out.print(" ");
+            System.out.print("|");
+        }
+        long avg = totalTime / timesToRun;
+        System.out.println(" (" + avg + "ms)");
+        return avg;
+    }
+
+    public static void testMulti(List<ConfigSettings> testConfigs) throws Exception {
+//        if (MPI.COMM_WORLD.Rank() == 0) {
+            int id = 0;
+            File f;
+            long singleTime = 0, multiTime = 0, distributedTime = 0;
+            BufferedWriter bw = null;
+            // Config parameter sets
+
+            // Prepare output
+            f = new File("resultsGolfMulti.csv");
+            bw = new BufferedWriter(new FileWriter(f));
+            bw.write("id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, time(ms), time(s)\n");
+
+            for (ConfigSettings config : testConfigs) {
+                config.apply();
+                multiTime = benchmark(Target.Multi, 3);
+                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Multi,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiTime, multiTime / 1000));
+                bw.flush();
+                id++;
+            }//loopcfg
+                bw.close();
+//        }//root
+    }
+    public static void testSingle(List<ConfigSettings> testConfigs) throws Exception {
+//        if (MPI.COMM_WORLD.Rank() == 0) {
+            int id = 0;
+            File f;
+            long singleTime = 0;
+            BufferedWriter bw = null;
+            // Config parameter sets
+
+            // Prepare output
+            f = new File("resultsGolfSingle.csv");
+            bw = new BufferedWriter(new FileWriter(f));
+            bw.write("id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, time(ms), time(s)\n");
+
+            for (ConfigSettings config : testConfigs) {
+                config.apply();
+                singleTime = benchmark(Target.Single, 3);
+                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Single,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, singleTime, singleTime / 1000));
+                bw.flush();
+                id++;
+            }//loopcfg
+//        }//root
+                bw.close();
+    }
+    public static void testDistributed(List<ConfigSettings> testConfigs) throws Exception {
+        int id = 0;
+        File f;
+        long distributedTime = 0;
+        BufferedWriter bw = null;
+        // Config parameter sets
+
+        // Prepare output
+        f = new File("resultsGolfDist.csv");
+        bw = new BufferedWriter(new FileWriter(f));
+        bw.write("id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, time(ms), time(s)\n");
+
+        for (ConfigSettings config : testConfigs) {
+            config.apply();
+
+            distributedTime = benchmark(Target.Distributed, 3);
+            bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Single,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, distributedTime, distributedTime / 1000));
+            bw.flush();
+            id++;
+            MPI.COMM_WORLD.Barrier();
+        }//loopcfg
+
+    bw.close();
+    }
+
+
 }//class
