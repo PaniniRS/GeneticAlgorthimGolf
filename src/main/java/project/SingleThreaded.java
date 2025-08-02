@@ -13,7 +13,8 @@ public class SingleThreaded {
     SingleThreaded(Random r){
         this.r = r;
     }
-    public void run()  {
+    public GeneticReturn run()  {
+        long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = Helper.generatePopulation(r);
 
         GUI panel = GUI_TOGGLE ? new GUI() : null;
@@ -51,7 +52,7 @@ public class SingleThreaded {
                     assert panel != null;
                     panel.updateVisualization(population, newBestPop, i);
                 }
-                return;
+                return new GeneticReturn(newBestPop.get(0), i,System.currentTimeMillis() - startTime);
             }
 
             //Crossover
@@ -66,5 +67,6 @@ public class SingleThreaded {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }//genLoop
+        return new GeneticReturn(null, GENERATIONS,System.currentTimeMillis() - startTime);
     }
 }

@@ -52,25 +52,24 @@ public class GeneticGolf {
                             for (double c : crossoverRates)
                                 testConfigs.add(new ConfigSettings(g, h, p, b, m, c));
 
-        testSingle(testConfigs);
+//        testSingle(testConfigs);
+        testMulti(testConfigs);
     }
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static long RunSingleThreaded(){
+    private static GeneticReturn RunSingleThreaded(){
         Random r = new Random(SEED);
-        long startTime = System.currentTimeMillis();
-
-        new SingleThreaded(r).run();
+        GeneticReturn runReturn = new SingleThreaded(r).run();
         optimalToggle();
-
-//        //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Info);
-        return System.currentTimeMillis() - startTime;
+        return runReturn;
     }
 
-    private static long RunMultiThreaded() throws Exception {
+    private static GeneticReturn RunMultiThreaded() throws Exception {
+        while (getOptimalReached() == 1){optimalToggle(); }
         Random r = new Random(SEED);
         long startTime = System.currentTimeMillis();
         ArrayList<Ball> population = generatePopulation(r);
@@ -118,7 +117,7 @@ public class GeneticGolf {
                 //Logger.log("Thread pool shutdown success", LogLevel.Status);
 
                 //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
-                return System.currentTimeMillis() - startTime;
+                return new GeneticReturn(newBestPop.get(0), i,System.currentTimeMillis() - startTime);
             }
 
             //crossover -> TODO: multithread w/ return
@@ -139,10 +138,11 @@ public class GeneticGolf {
                 panel.updateVisualization(population, newBestPop, i);
             }
         }
-        return System.currentTimeMillis() - startTime;
+
+        return new GeneticReturn(null, GENERATIONS,System.currentTimeMillis() - startTime);
     }
 
-    private static long RunDistributed() throws Exception {
+    private static GeneticReturn RunDistributed() throws Exception {
         while (getOptimalReached() == 1){optimalToggle();}
         long startTime = System.currentTimeMillis();
         final int ROOT = 0;
@@ -225,7 +225,8 @@ public class GeneticGolf {
                         //Logger.log("Time: " + (System.currentTimeMillis() - startTime) + " ms" + "\t"+ (System.currentTimeMillis() - startTime)/1000.00 + " s", LogLevel.Status);
                     MPI.COMM_WORLD.Barrier();
 //                    MPI.Finalize();
-                    return System.currentTimeMillis() - startTime;}
+                    return new GeneticReturn(newBestPop.get(0), i,System.currentTimeMillis() - startTime);
+                }
                 // Update globalPopulationArrayList to be the working population only
                 globalPopulationArray = globalPopulationArrayList.toArray();
             }
@@ -293,7 +294,7 @@ public class GeneticGolf {
         //CLose MPI protocol
         MPI.COMM_WORLD.Barrier();
 //        MPI.Finalize();
-        return System.currentTimeMillis() - startTime;
+        return new GeneticReturn(null, GENERATIONS,System.currentTimeMillis() - startTime);
     }
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////xsx
@@ -313,40 +314,60 @@ public class GeneticGolf {
         }
     }
 
-    public static long benchmark(Target target, int timesToRun) throws Exception {
+    public static GeneticReturn benchmark(Target target, int timesToRun) throws Exception {
         long totalTime = 0;
+        GeneticReturn runReturn;
+        int generation = 101010101;
+        Ball bestFitness = null;
+
         System.out.print("Running " + target + " " + timesToRun + "x:\t");
         for (int i = 0; i < timesToRun; i++) {
             switch (target) {
-                case Single -> totalTime += RunSingleThreaded();
-                case Multi -> totalTime += RunMultiThreaded();
-                case Distributed -> totalTime += RunDistributed();
+                case Single -> {
+                    runReturn = RunSingleThreaded();
+                    totalTime += runReturn.time;
+                    generation = runReturn.endGeneration;
+                    bestFitness = runReturn.bestFitness;
+                }
+                case Multi -> {
+                    runReturn = RunMultiThreaded();
+                    totalTime += runReturn.time;
+                    generation = runReturn.endGeneration;
+                    bestFitness = runReturn.bestFitness;
+                }
+                case Distributed -> {
+                    runReturn = RunDistributed();
+                    totalTime += runReturn.time;
+                    generation = runReturn.endGeneration;
+                    bestFitness = runReturn.bestFitness;
+                }
             }
             if (i % 5 == 0) System.out.print(" ");
             System.out.print("|");
         }
         long avg = totalTime / timesToRun;
         System.out.println(" (" + avg + "ms)");
-        return avg;
+        return new GeneticReturn(bestFitness, generation, avg);
     }
 
     public static void testMulti(List<ConfigSettings> testConfigs) throws Exception {
 //        if (MPI.COMM_WORLD.Rank() == 0) {
             int id = 0;
             File f;
-            long singleTime = 0, multiTime = 0, distributedTime = 0;
+            long multiTime = 0;
             BufferedWriter bw = null;
             // Config parameter sets
 
             // Prepare output
             f = new File("resultsGolfMulti.csv");
             bw = new BufferedWriter(new FileWriter(f));
-            bw.write("id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, time(ms), time(s)\n");
+            bw.write("id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, endFitness, endGeneration, time(ms), time(s)\n");
 
             for (ConfigSettings config : testConfigs) {
                 config.apply();
-                multiTime = benchmark(Target.Multi, 3);
-                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Multi,%d ms, %d s\n", id, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiTime, multiTime / 1000));
+                GeneticReturn multiReturn = benchmark(Target.Multi, 3);
+                multiTime = multiReturn.time;
+                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Multi,%f,%d,%d ms, %d s\n", id, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiReturn.bestFitness.getFitness(), multiReturn.endGeneration,multiTime, multiTime / 1000));
                 bw.flush();
                 id++;
             }//loopcfg
@@ -368,8 +389,9 @@ public class GeneticGolf {
 
             for (ConfigSettings config : testConfigs) {
                 config.apply();
-                singleTime = benchmark(Target.Single, 3);
-                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Single,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, singleTime, singleTime / 1000));
+                GeneticReturn multiReturn = benchmark(Target.Single, 3);
+                singleTime = multiReturn.time;
+                bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Single,%f,%d,%d ms, %d s\n", id, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiReturn.bestFitness.getFitness(), multiReturn.endGeneration,singleTime, singleTime / 1000));
                 bw.flush();
                 id++;
             }//loopcfg
@@ -391,8 +413,9 @@ public class GeneticGolf {
         for (ConfigSettings config : testConfigs) {
             config.apply();
 
-            distributedTime = benchmark(Target.Distributed, 3);
-            bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Single,%d ms, %d s\n", id++, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, distributedTime, distributedTime / 1000));
+            GeneticReturn multiReturn = benchmark(Target.Distributed, 3);
+            distributedTime = multiReturn.time;
+            bw.write(String.format("%d,%d,%d,%d,%.2f,%.2f,%.2f,Distributed,%f,%d,%d ms, %d s\n", id, config.generations, config.popSize, config.bestPopSize, config.holePos, config.mutationRate, config.crossoverRate, multiReturn.bestFitness.getFitness(), multiReturn.endGeneration,distributedTime, distributedTime / 1000));
             bw.flush();
             id++;
             MPI.COMM_WORLD.Barrier();
