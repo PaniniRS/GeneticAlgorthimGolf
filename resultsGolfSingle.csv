@@ -1,4 +1,4 @@
-id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, time(ms), time(s)
+id, generations, popSize, bestPopSize, holePos, mutationRate, crossoverRate, runType, endFitness, endGeneration, time(ms), time(s)
 0,10000,1000,4,300000.00,0.10,0.20,Multi,0.953136,1377,1716 ms, 1 s
 1,10000,1000,4,300000.00,0.10,0.60,Multi,0.953136,1377,1681 ms, 1 s
 2,10000,1000,4,300000.00,0.30,0.20,Multi,0.981158,8735,10728 ms, 10 s
