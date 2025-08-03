@@ -34,7 +34,7 @@ public class GeneticGolf {
         } else {
             //Logger.log("Main arguments: (none provided to application)", LogLevel.Warn);
         }
-        MPI.Init(argsP);
+//        MPI.Init(argsP);
 
         List<ConfigSettings> testConfigs = new ArrayList<>();
         int[] generations = {10000, 20000};
@@ -53,12 +53,12 @@ public class GeneticGolf {
                             for (double c : crossoverRates)
                                 testConfigs.add(new ConfigSettings(g, h, p, b, m, c));
 
-        MPI.COMM_WORLD.Barrier();
-//        testSingle(testConfigs);
+//        MPI.COMM_WORLD.Barrier();
+        testSingle(testConfigs);
 //        testMulti(testConfigs);
-        Logger.log("Running testDist");
-        testDistributed(testConfigs);
-        MPI.Finalize();
+//        Logger.log("Running testDist");
+//        testDistributed(testConfigs);
+//        MPI.Finalize();
     }
 
 
@@ -321,8 +321,9 @@ public class GeneticGolf {
         GeneticReturn runReturn;
         int generation = 101010101;
         Ball bestFitness = null;
-
-        if (MPI.COMM_WORLD.Rank() == 0)System.out.print("Running " + target + " " + timesToRun + "x:\t");
+//        if (MPI.COMM_WORLD.Rank() == 0){
+        System.out.print("Running " + target + " " + timesToRun + "x:\t");
+//        }
 
         for (int i = 0; i < timesToRun; i++) {
 
@@ -342,27 +343,27 @@ public class GeneticGolf {
                 case Distributed -> {
                     runReturn = RunDistributed();
 
-                    if (MPI.COMM_WORLD.Rank() == 0) {
+//                    if (MPI.COMM_WORLD.Rank() == 0) {
                         totalTime += runReturn.time;
                         generation = runReturn.endGeneration;
                         bestFitness = runReturn.bestFitness;
-                    }
+//                    }
                 }
             }
-            if (MPI.COMM_WORLD.Rank() == 0) {
+//            if (MPI.COMM_WORLD.Rank() == 0) {
                 if (i % 5 == 0) System.out.print(" ");
                 System.out.print("|");
-            }
+//            }
 
             // Add barrier to synchronize all processes between runs
-            MPI.COMM_WORLD.Barrier();
+//            MPI.COMM_WORLD.Barrier();
         }
 
         long avg = 0;
-        if (MPI.COMM_WORLD.Rank() == 0) {
+//        if (MPI.COMM_WORLD.Rank() == 0) {
             avg = totalTime / timesToRun;
             System.out.println(" (" + avg + "ms)");
-        }
+//        }
 
         return new GeneticReturn(bestFitness, generation, avg);
     }
