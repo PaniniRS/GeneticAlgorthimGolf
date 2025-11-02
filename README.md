@@ -1,5 +1,3 @@
-<img width="1128" alt="image" src="https://github.com/user-attachments/assets/bcb3398d-861d-48a4-a140-4cbe34413d24" />
-
 # Genetic Algorithm for Golf Shot Optimization
 
 This project uses evolutionary computation to optimize golf ball trajectories under simulated physics. It evolves launch angle, velocity, and horizontal position to achieve a hole-in-one across varying distances. Three execution models are implemented to demonstrate algorithm performance across different computing environments.
@@ -122,4 +120,4 @@ Includes methodology, analysis, graphs, parameter study, and performance evaluat
 Focus: simulation, concurrency, distributed computing, evolutionary algorithms.
 
 ---
-
+<img width="1128" alt="image" src="https://github.com/user-attachments/assets/bcb3398d-861d-48a4-a140-4cbe34413d24" />
