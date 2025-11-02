@@ -81,6 +81,7 @@ GUI mode can be toggled for performance tests.
 ---
 
 ## Project Structure
+```text
 src/
 ├── SingleThreaded.java
 ├── GeneticGolf.java
@@ -90,7 +91,7 @@ src/
 assets/
 results/
 README.md
-
+```
 ---
 
 ## Future Potential Enhancements
